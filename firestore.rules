@@ -1,0 +1,579 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Función para verificar si el usuario es administrador
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+    
+    // Función para verificar si los campos de ubicación son válidos
+    function isValidLocation(locationData) {
+      let hasLatitude = locationData is map && locationData.latitude is number;
+      let hasLongitude = locationData is map && locationData.longitude is number;
+      let validLatitude = hasLatitude && locationData.latitude >= -90 && locationData.latitude <= 90;
+      let validLongitude = hasLongitude && locationData.longitude >= -180 && locationData.longitude <= 180;
+      
+      return hasLatitude && hasLongitude && validLatitude && validLongitude;
+    }
+    
+    // Función para verificar si el usuario tiene permisos de staff
+    function isStaff() {
+      return isAuthenticated() && (request.auth.token.admin == true || request.auth.token.moderator == true);
+    }
+    
+    // Función para verificar si dos usuarios tienen un match
+    function hasMatch(userId1, userId2) {
+      return exists(/databases/$(database)/documents/matches/$(userId1 + '_' + userId2)) || 
+             exists(/databases/$(database)/documents/matches/$(userId2 + '_' + userId1));
+    }
+    
+    function isValidUserUpdate() {
+      // Validar que no se excedan los límites de fotos/videos
+      let isPremium = request.auth.token.premium == true;
+      let photosCount = request.resource.data.photos.additionalPhotos.size() + 1; // +1 por mainPhoto
+      let videosCount = request.resource.data.videos != null ? request.resource.data.videos.size() : 0;
+      
+      return (isPremium && photosCount <= 4 && videosCount <= 1) || 
+             (!isPremium && photosCount <= 2 && videosCount == 0);
+    }
+    
+    function isValidUserCreation() {
+      // Validar creación inicial de usuario
+      return request.resource.data.keys().hasAll(['name', 'email']) &&
+             request.resource.data.name is string &&
+             request.resource.data.email is string;
+    }
+    // Chat collections - secure rules
+    match /chats/{chatId} {
+      allow read: if request.auth != null && 
+        request.auth.uid in resource.data.participants;
+      allow create: if request.auth != null && 
+        request.auth.uid in request.resource.data.participants;
+      allow update: if request.auth != null && 
+        request.auth.uid in resource.data.participants;
+      
+      match /messages/{messageId} {
+        allow read: if request.auth != null && 
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if request.auth != null && 
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+          request.auth.uid == request.resource.data.senderId;
+        allow update, delete: if request.auth != null && 
+          request.auth.uid == resource.data.senderId;
+      }
+    }
+    
+    // Likes collection - secure rules
+    match /likes/{likeId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.fromUserId;
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.fromUserId;
+    }
+    
+    // Matches collection - secure rules
+    match /matches/{matchId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.user1Id || 
+         request.auth.uid == resource.data.user2Id);
+      allow create: if request.auth != null && 
+        (request.auth.uid == request.resource.data.user1Id || 
+         request.auth.uid == request.resource.data.user2Id);
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.user1Id || 
+         request.auth.uid == resource.data.user2Id);
+    }
+    
+    // Reglas para reportes
+    
+    // Reglas para transacciones de créditos
+    match /creditTransactions/{transactionId} {
+      // Solo el propietario puede leer sus transacciones
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Solo el sistema (Cloud Functions) puede crear transacciones
+      allow create: if isAuthenticated() && 
+                     (isAdmin() || request.auth.token.cloudFunction == true) &&
+                     request.resource.data.keys().hasAll(['userId', 'type', 'amount', 'timestamp', 'description']);
+      
+      // No se permite actualizar o eliminar transacciones
+      allow update, delete: if false;
+    }
+    
+    // Reglas para compras de créditos
+    match /creditPurchases/{purchaseId} {
+      // Solo el propietario puede leer sus compras
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Solo el propietario puede crear una compra (el procesamiento real ocurre en Cloud Functions)
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId == request.auth.uid && 
+                     request.resource.data.status == "pending" && 
+                     request.resource.data.amount > 0 && 
+                     request.resource.data.paymentMethod in ["creditCard", "paypal", "mercadopago"] &&
+                     request.resource.data.keys().hasAll(['userId', 'amount', 'status', 'timestamp', 'paymentMethod', 'productId']);
+      
+      // Solo Cloud Functions puede actualizar el estado de la compra
+      allow update: if isAuthenticated() && 
+                     (isAdmin() || request.auth.token.cloudFunction == true) &&
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'processedAt', 'paymentId', 'transactionId']);
+      
+      // No se permite eliminar compras
+      allow delete: if false;
+    }
+    
+    // Reglas para boosts de perfil
+    match /profileBoosts/{boostId} {
+      // Solo el propietario puede leer sus boosts
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Solo el propietario puede crear un boost (la verificación de créditos ocurre en Cloud Functions)
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId == request.auth.uid && 
+                     request.resource.data.status == "active" && 
+                     request.resource.data.duration > 0 &&
+                     request.resource.data.keys().hasAll(['userId', 'status', 'startTime', 'endTime', 'duration', 'cost']);
+      
+      // Solo Cloud Functions puede actualizar el estado del boost
+      allow update: if isAuthenticated() && 
+                     (isAdmin() || request.auth.token.cloudFunction == true) &&
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'endTime']);
+      
+      // No se permite eliminar boosts manualmente
+      allow delete: if false; // Se gestiona a través de Cloud Functions
+    }
+    match /reports/{reportId} {
+      // Solo administradores pueden leer reportes (por ahora permitir al creador)
+      allow read: if isAuthenticated() && 
+        resource.data.reporterId == request.auth.uid;
+      
+      // Permitir crear reportes si está autenticado y es el reportero
+      allow create: if isAuthenticated() && 
+        request.resource.data.reporterId == request.auth.uid;
+      
+      // No permitir actualizar o eliminar reportes
+      allow update, delete: if false;
+    }
+    
+    // Reglas para usuarios bloqueados
+    match /blocked/{blockId} {
+      // Permitir lectura/escritura solo al usuario que bloquea
+      allow read, write: if isAuthenticated() && 
+        (resource.data.blockerId == request.auth.uid ||
+         request.resource.data.blockerId == request.auth.uid);
+    }
+    
+    // Reglas para notificaciones
+    match /notifications/{notificationId} {
+      // Permitir lectura solo al destinatario
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Permitir crear notificaciones (sistema)
+      allow create: if isAuthenticated();
+      
+      // Permitir actualizar solo para marcar como leída
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // Permitir eliminar solo al destinatario
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Reglas para usuarios
+    match /users/{userId} {
+      // Permitir lectura a usuarios autenticados (incluyendo anónimos)
+      allow read: if isAuthenticated();
+      
+      // Permitir escritura solo al propietario del perfil con validaciones
+      // Para usuarios anónimos, permitir operaciones básicas
+      allow write: if isAuthenticated() && 
+        (isOwner(userId) && isValidUserUpdate() || 
+         (request.auth.token.firebase.sign_in_provider == 'anonymous' && isOwner(userId)));
+      
+      // Permitir crear perfil durante el registro (incluyendo anónimos)
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.id && 
+        (isValidUserCreation() || request.auth.token.firebase.sign_in_provider == 'anonymous');
+      
+      // Reglas específicas para actualización de ubicación
+      allow update: if isAuthenticated() && isOwner(userId) && 
+        (!request.resource.data.keys().hasAny(['location', 'geohash', 'online']) || 
+         (request.resource.data.keys().hasAny(['location']) && 
+          isValidLocation(request.resource.data.location)));
+          
+      // Reglas específicas para actualización de créditos
+      allow update: if isAuthenticated() && 
+        (isOwner(userId) || request.auth.token.admin == true) && 
+        request.resource.data.keys().hasAny(['credits']) && 
+        (request.resource.data.credits is number && request.resource.data.credits >= 0);
+          
+      // Subcollección para historial de transacciones de créditos
+      match /creditTransactions/{transactionId} {
+        // Solo el propietario puede leer su historial de transacciones
+        allow read: if isAuthenticated() && isOwner(userId);
+        
+        // Solo el sistema (Cloud Functions) puede crear transacciones
+        // o el propietario en caso de transacciones de gasto de créditos
+        allow create: if isAuthenticated() && 
+          (request.auth.token.admin == true || isOwner(userId)) &&
+          request.resource.data.keys().hasAll(['type', 'amount', 'timestamp', 'description']);
+        
+        // No permitir modificar o eliminar transacciones
+        allow update, delete: if false;
+      }
+      
+      // Subcollección para historial de boosts de perfil
+      match /boostHistory/{boostId} {
+        // Solo el propietario puede leer su historial de boosts
+        allow read: if isAuthenticated() && isOwner(userId);
+        
+        // Solo el propietario puede crear registros de boost
+        allow create: if isAuthenticated() && isOwner(userId) &&
+          request.resource.data.keys().hasAll(['type', 'activatedAt', 'expiresAt', 'duration']);
+        
+        // No permitir modificar o eliminar registros de boost
+        allow update, delete: if false;
+      }
+    }
+    
+    // Reglas para la colección de ubicaciones
+    match /locations/{userId} {
+      // Función para verificar si un usuario puede ver la ubicación de otro según configuración de privacidad
+      function canViewLocation(viewerId, targetId) {
+        let settings = get(/databases/$(database)/documents/userSettings/$(targetId)).data.locationPrivacy;
+        
+        // Si no comparte ubicación, nadie puede verla excepto el propietario y staff
+        if (settings.shareLocation == false) {
+          return false;
+        }
+        
+        // Verificar visibilidad según configuración
+        return settings.locationVisibleTo == 'all' || 
+              (settings.locationVisibleTo == 'matches' && hasMatch(viewerId, targetId));
+      }
+      
+      // Reglas de lectura para ubicaciones
+      allow read: if isAuthenticated() && (
+        // El propietario siempre puede leer su ubicación
+        isOwner(userId) ||
+        // Staff puede leer ubicaciones
+        isStaff() ||
+        // Otros usuarios según configuración de privacidad
+        (exists(/databases/$(database)/documents/userSettings/$(userId)) &&
+         canViewLocation(request.auth.uid, userId))
+      );
+      
+      // Solo el propietario puede actualizar su ubicación
+      allow write: if isAuthenticated() && isOwner(userId);
+      
+      // Validar que la ubicación tenga los campos requeridos
+      allow create, update: if isAuthenticated() && 
+        isOwner(userId) && 
+        request.resource.data.keys().hasAll(['location', 'geohash', 'updatedAt']) &&
+        isValidLocation(request.resource.data.location) &&
+        request.resource.data.geohash is string &&
+        request.resource.data.updatedAt is timestamp;
+    }
+    
+    // Reglas para productos y paquetes de créditos
+    match /products/{productId} {
+      // Todos los usuarios autenticados pueden leer los productos disponibles
+      allow read: if isAuthenticated();
+      
+      // Solo administradores pueden crear, actualizar o eliminar productos
+      allow write: if isAuthenticated() && isAdmin();
+    }
+    
+    // Reglas para saldos de créditos de usuarios
+    match /userCredits/{userId} {
+      // Solo el propietario puede leer su saldo de créditos
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Solo Cloud Functions puede crear o actualizar saldos de créditos
+      allow create, update: if isAuthenticated() && 
+        (isAdmin() || request.auth.token.cloudFunction == true);
+      
+      // No permitir eliminar saldos de créditos
+      allow delete: if false;
+    }
+    
+    // Reglas para transacciones de pago
+    match /paymentTransactions/{transactionId} {
+      // El usuario solo puede ver sus propias transacciones
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Solo el sistema (Cloud Functions) o el propietario pueden crear transacciones
+      allow create: if isAuthenticated() && 
+        (request.resource.data.userId == request.auth.uid || isAdmin()) &&
+        request.resource.data.keys().hasAll(['userId', 'amount', 'status', 'timestamp', 'productId']);
+      
+      // Solo el sistema puede actualizar el estado de las transacciones
+      allow update: if isAuthenticated() && isAdmin() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'processedAt', 'paymentId']);
+      
+      // No permitir eliminar transacciones
+      allow delete: if false;
+    }
+      
+      // No permitir eliminar ubicaciones (solo actualizar)
+      allow delete: if false;
+    }
+    
+    // Reglas para transacciones premium (mensajes destacados, regalos, etc.)
+    match /premiumTransactions/{transactionId} {
+      // Solo el propietario puede leer sus transacciones premium
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Solo Cloud Functions puede crear transacciones premium (después de verificar créditos)
+      allow create: if isAuthenticated() && 
+                     (isAdmin() || request.auth.token.cloudFunction == true) &&
+                     request.resource.data.keys().hasAll(['userId', 'type', 'amount', 'timestamp', 'targetId']);
+      
+      // No se permite actualizar o eliminar transacciones premium
+      allow update, delete: if false;
+    }
+    
+    // Reglas para mensajes premium
+    match /premiumMessages/{messageId} {
+      // Solo el remitente y el destinatario pueden leer los mensajes premium
+      allow read: if isAuthenticated() && 
+                   (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid);
+      
+      // Solo el propietario puede crear un mensaje premium (la verificación de créditos ocurre en Cloud Functions)
+      allow create: if isAuthenticated() && 
+                     request.resource.data.senderId == request.auth.uid && 
+                     request.resource.data.keys().hasAll(['senderId', 'receiverId', 'content', 'timestamp', 'cost', 'type']);
+      
+      // No se permite actualizar o eliminar mensajes premium
+      allow update, delete: if false;
+    }
+    
+    // Reglas para configuraciones de usuario
+    match /userSettings/{userId} {
+      // Permitir lectura/escritura solo al propietario y staff para moderación
+      allow read: if isAuthenticated() && (isOwner(userId) || isStaff());
+      allow write: if isAuthenticated() && isOwner(userId);
+      
+      // Validar que la configuración de privacidad de ubicación tenga estructura correcta
+      allow create, update: if isAuthenticated() && 
+        isOwner(userId) && 
+        (!request.resource.data.keys().hasAny(['locationPrivacy']) || 
+         (request.resource.data.locationPrivacy is map && 
+          request.resource.data.locationPrivacy.keys().hasAll(['shareLocation', 'showDistance', 'showLastActive', 'preciseLocation', 'locationVisibleTo']) &&
+          request.resource.data.locationPrivacy.shareLocation is bool &&
+          request.resource.data.locationPrivacy.showDistance is bool &&
+          request.resource.data.locationPrivacy.showLastActive is bool &&
+          request.resource.data.locationPrivacy.preciseLocation is bool &&
+          request.resource.data.locationPrivacy.locationVisibleTo in ['all', 'matches', 'none']));
+    }
+    
+    // Reglas para historial de ubicaciones
+    match /locationHistory/{historyId} {
+      // Solo el propietario y staff pueden leer el historial
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isStaff()
+      );
+      
+      // Solo el propietario puede crear entradas en su historial
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['location', 'timestamp']) &&
+        isValidLocation(request.resource.data.location) &&
+        request.resource.data.timestamp is timestamp;
+      
+      // No permitir actualización de historial, solo creación y eliminación
+      allow update: if false;
+      
+      // Permitir eliminar solo al propietario
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Usuarios
+    match /users/{userId} {
+      allow read: if isAuthenticated() && 
+        (resource.id == request.auth.uid || 
+         !resource.data.profile.privacy.incognitoMode);
+      allow write: if isAuthenticated() && 
+        resource.id == request.auth.uid &&
+        isValidUserData(request.resource.data);
+    }
+    
+    // Chats
+    match /chats/{chatId} {
+      allow read, write: if isAuthenticated() && 
+        request.auth.uid in resource.data.participants;
+      
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() && 
+          request.auth.uid == request.resource.data.senderId &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if isAuthenticated() && 
+          request.auth.uid == resource.data.senderId &&
+          onlyUpdatingAllowedFields();
+      }
+    }
+    
+    // Interacciones
+    match /interactions/{interactionId} {
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.fromUserId || 
+         request.auth.uid == resource.data.toUserId);
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.fromUserId &&
+        isValidInteraction(request.resource.data);
+    }
+    
+    // Reportes
+    match /reports/{reportId} {
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.reporterId;
+      allow read, update: if isAdmin();
+    }
+    
+    // Notificaciones
+    match /notifications/{notificationId} {
+      allow read, update: if isAuthenticated() && 
+        request.auth.uid == resource.data.userId;
+    }
+    
+    // Transacciones
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && 
+        request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Créditos
+    match /credits/{userId} {
+      allow read, write: if isAuthenticated() && 
+        request.auth.uid == userId;
+    }
+    
+    // Admin
+    match /admin/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Funciones auxiliares adicionales
+    function isValidUserData(data) {
+      return data.keys().hasAll(['profile', 'createdAt', 'updatedAt']) &&
+        data.profile.age is number &&
+        data.profile.age >= 18 &&
+        data.profile.age <= 99;
+    }
+    
+    function isValidInteraction(data) {
+      return data.keys().hasAll(['fromUserId', 'toUserId', 'type', 'timestamp']) &&
+        data.type in ['tap', 'like', 'pass', 'block', 'favorite', 'view'] &&
+        data.fromUserId != data.toUserId;
+    }
+    
+    function onlyUpdatingAllowedFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['isEdited', 'editedAt', 'reactions']);
+    }
+    
+    // Reglas para logs de producción - SOLO ESCRITURA
+    match /production_logs_event/{logId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+    }
+    
+    match /production_logs_error/{logId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+    }
+    
+    match /production_logs_performance/{logId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+    }
+    
+    match /production_logs_business_metric/{logId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+    }
+    
+    // Reglas para alertas de producción
+    match /production_alerts/{alertId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+      allow update: if isAdmin(); // Para marcar como resueltas
+    }
+    
+    // Reglas para métricas de salud del sistema
+    match /system_health/{healthId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+    }
+    
+    // Reglas para analytics
+    match /analytics/{analyticsId} {
+      allow create: if request.auth != null;
+      allow read: if isAdmin();
+    }
+    
+    // Reglas para feedback de usuarios
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+      allow read: if isAdmin();
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own profile and other users' public data
+      allow read: if request.auth != null;
+      // Users can only write to their own profile
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Chats collection
+    match /chats/{chatId} {
+      // Only participants can read/write chat data
+      allow read, write: if request.auth != null && 
+        request.auth.uid in resource.data.participants;
+      // Allow creation if user is one of the participants
+      allow create: if request.auth != null && 
+        request.auth.uid in request.resource.data.participants;
+    }
+    
+    // Messages subcollection
+    match /chats/{chatId}/messages/{messageId} {
+      // Only chat participants can read messages
+      allow read: if request.auth != null && 
+        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      // Only authenticated users can create messages
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.senderId &&
+        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      // No updates or deletes allowed on messages
+      allow update, delete: if false;
+    }
+    
+    // Denegar acceso a cualquier otra colección no especificada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

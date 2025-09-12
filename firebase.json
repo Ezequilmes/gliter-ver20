@@ -1,0 +1,88 @@
+{
+  "hosting": {
+    "site": "soygay-b9bc5",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "customDomain": "gliter.com.ar",
+    "rewrites": [
+      {
+        "source": "/api/auth/**",
+        "function": {"region": "us-central1", "name": "authHandler"}
+      },
+      {
+        "source": "/api/users/**",
+        "function": {"region": "us-central1", "name": "usersHandler"}
+      },
+      {
+        "source": "/api/chat/**",
+        "function": {"region": "us-central1", "name": "chatHandler"}
+      },
+      {
+        "source": "/api/payments/**",
+        "function": {"region": "us-central1", "name": "paymentsHandler"}
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(html|json)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=0, no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs18"
+  },
+  "firestore": {
+    "rules": "firestore.rules.production",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules.production"
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true
+    }
+  }
+}

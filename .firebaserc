@@ -1,0 +1,24 @@
+{
+  "projects": {
+    "default": "soygay-b9bc5"
+  },
+  "targets": {
+    "soygay-b9bc5": {
+      "hosting": {
+        "gliter-app-2": [
+          "soygay-b9bc5"
+        ],
+        "gliter-com-ar": [
+          "gliter-com-ar"
+        ],
+        "gliter-com-ar-web-app": [
+          "gliter-com-ar-web-app"
+        ],
+        "gliter": [
+          "gliter-com-ar-71ac1"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

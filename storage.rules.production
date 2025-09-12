@@ -1,0 +1,123 @@
+// Firebase Storage Security Rules for Production
+// These rules provide secure access control for file uploads and downloads
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    function isValidUser() {
+      return isAuthenticated() && request.auth.token.email_verified == true;
+    }
+    
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidVideoType() {
+      return request.resource.contentType.matches('video/.*');
+    }
+    
+    function isValidFileSize(maxSizeMB) {
+      return request.resource.size < maxSizeMB * 1024 * 1024;
+    }
+    
+    // User profile images
+    match /users/{userId}/profile/{imageId} {
+      // Public read access for profile images (for discovery)
+      allow read: if true;
+      
+      // Only owner can upload/update their profile images
+      allow write: if isOwner(userId) && 
+                      isValidUser() &&
+                      isValidImageType() &&
+                      isValidFileSize(5); // 5MB limit
+      
+      // Only owner or admin can delete
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // User gallery images (additional photos)
+    match /users/{userId}/gallery/{imageId} {
+      // Authenticated users can view gallery images
+      allow read: if isAuthenticated();
+      
+      // Only owner can upload gallery images
+      allow write: if isOwner(userId) && 
+                      isValidUser() &&
+                      isValidImageType() &&
+                      isValidFileSize(10); // 10MB limit
+      
+      // Only owner or admin can delete
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // Chat media (images and videos)
+    match /chats/{conversationId}/{mediaId} {
+      // Only authenticated users can read chat media
+      allow read: if isAuthenticated();
+      
+      // Users can upload media to chats they participate in
+      allow write: if isAuthenticated() && 
+                      isValidUser() &&
+                      (isValidImageType() || isValidVideoType()) &&
+                      isValidFileSize(25); // 25MB limit for chat media
+      
+      // Only admin can delete chat media (for moderation)
+      allow delete: if isAdmin();
+    }
+    
+    // Temporary uploads (for processing)
+    match /temp/{userId}/{fileId} {
+      // Only owner can read temp files
+      allow read: if isOwner(userId);
+      
+      // Only owner can upload temp files
+      allow write: if isOwner(userId) && 
+                      isValidUser() &&
+                      (isValidImageType() || isValidVideoType()) &&
+                      isValidFileSize(50); // 50MB limit for temp files
+      
+      // Auto-delete temp files (handled by Cloud Functions)
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // System files (admin only)
+    match /system/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Backup files (admin only)
+    match /backups/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Analytics and logs (admin only)
+    match /analytics/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
