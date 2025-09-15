@@ -4,8 +4,8 @@
   "/auth/page": "app/auth/page.js",
   "/favorites/page": "app/favorites/page.js",
   "/page": "app/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/robots.txt/route": "app/robots.txt/route.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/settings/page": "app/settings/page.js",
   "/chat/[chatId]/page": "app/chat/[chatId]/page.js"
 }
