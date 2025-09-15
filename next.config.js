@@ -1,14 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static export for Firebase Hosting
-  output: 'export',
-  trailingSlash: true,
-  skipTrailingSlashRedirect: true,
+  // Next.js SSR en App Hosting
+  output: 'standalone',
+  trailingSlash: false,
+  skipTrailingSlashRedirect: false,
   
-  // Image optimization configuration
+  // Image optimization configuration (evitar dependencias nativas como sharp)
   images: {
     domains: ['firebasestorage.googleapis.com', 'images.unsplash.com'],
-    unoptimized: true // Required for static export
+    unoptimized: true
   },
   
   // Environment variables
@@ -17,29 +17,43 @@ const nextConfig = {
     NEXT_PUBLIC_APP_VERSION: '1.0.0'
   },
   
-  // Security headers
+  // Security headers + Caching for static assets
   async headers() {
     return [
+      // Cache busting and immutable caching for Next static assets
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }
+        ]
+      },
+      // Cache immutable for common static asset extensions
+      {
+        source: '/:path*.(js|css|json|svg|png|jpg|jpeg|gif|webp|woff|woff2|ttf|eot)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }
+        ]
+      },
+      // Security headers (apply to all routes)
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'geolocation=(self), microphone=(), camera=()'
-          }
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(), camera=()' }
         ]
+      }
+    ]
+  },
+
+  // Redirects para favicon
+  async redirects() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/icon.svg',
+        permanent: false
       }
     ]
   }

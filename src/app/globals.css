@@ -5,6 +5,9 @@
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    /* Compatibility: ensure non-prefixed property exists for Chromium/Firefox */
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
   }
   
   body {
@@ -46,5 +49,10 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Compatibility: Safari older versions need the webkit-prefixed backdrop-filter */
+  .backdrop-blur {
+    -webkit-backdrop-filter: blur(8px);
   }
 }

@@ -9,21 +9,19 @@ import Image from 'next/image';
 interface ChatWindowProps {
   currentUser: User;
   otherUser: User;
-  chatId: string;
   onSendMessage: (message: string, type: 'texto' | 'foto', file?: File) => void;
   onClose: () => void;
+  chatId?: string;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   currentUser,
   otherUser,
-  chatId,
   onSendMessage,
   onClose,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -166,17 +164,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           />
         ))}
         
-        {isTyping && (
-          <div className="flex items-center space-x-2 text-gray-500">
-            <div className="flex space-x-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-            </div>
-            <span className="text-sm">{otherUser.nombre} está escribiendo...</span>
-          </div>
-        )}
-        
         <div ref={messagesEndRef} />
       </div>
 
@@ -252,11 +239,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
         
         <input
-          ref={fileInputRef}
+          id="chat-file-upload"
+          name="file"
           type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
+          accept="image/*,video/*"
           className="hidden"
+          onChange={handleFileSelect}
+          aria-label="Subir archivo"
         />
       </div>
     </div>

@@ -8,9 +8,10 @@ import { User, Chat } from '@/types';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 const ChatListPage = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [chats, setChats] = useState<Chat[]>([]);
@@ -136,7 +137,7 @@ const ChatListPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-accent-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-accent-500" />
       </div>
     );
   }
@@ -153,6 +154,7 @@ const ChatListPage = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <button
+                aria-label="Volver al inicio"
                 onClick={() => router.push('/')}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
@@ -175,8 +177,11 @@ const ChatListPage = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
+              id="buscar-conversaciones"
+              name="q"
               type="text"
               placeholder="Buscar conversaciones..."
+              aria-label="Buscar conversaciones"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
@@ -188,7 +193,7 @@ const ChatListPage = () => {
         <div className="space-y-2">
           {filteredChats.length === 0 ? (
             <div className="text-center py-12">
-              <MessageCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <MessageCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" aria-hidden="true" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {searchTerm ? 'No se encontraron conversaciones' : 'No tienes conversaciones aún'}
               </h3>
@@ -215,7 +220,15 @@ const ChatListPage = () => {
               return (
                 <div
                   key={chat.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => router.push(`/chat/${chat.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      router.push(`/chat/${chat.id}`);
+                    }
+                  }}
                   className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 hover:border-primary-200"
                 >
                   <div className="flex items-center space-x-4">
@@ -242,9 +255,11 @@ const ChatListPage = () => {
                         />
                       </div>
                       {/* Indicador de estado */}
-                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full ${
-                        isUserOnline(otherUser.lastOnline) ? 'bg-green-400' : 'bg-gray-400'
-                      }`} />
+                      <div
+                        className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full ${
+                          isUserOnline(otherUser.lastOnline) ? 'bg-green-400' : 'bg-gray-400'
+                        }`}
+                      />
                     </div>
 
                     {/* Información del chat */}
@@ -274,11 +289,9 @@ const ChatListPage = () => {
                       {/* Rol sexual badge */}
                       {otherUser.rolSexual && (
                         <div className="mt-2">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                            otherUser.rolSexual === 'activo' ? 'bg-blue-100 text-blue-800' :
-                            otherUser.rolSexual === 'pasivo' ? 'bg-pink-100 text-pink-800' :
-                            'bg-purple-100 text-purple-800'
-                          }`} />
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${otherUser.rolSexual === 'activo' ? 'bg-blue-100 text-blue-800' : otherUser.rolSexual === 'pasivo' ? 'bg-pink-100 text-pink-800' : 'bg-purple-100 text-purple-800'}`}>
+                            {otherUser.rolSexual}
+                          </span>
                         </div>
                       )}
                     </div>

@@ -1,0 +1,47 @@
+# Firebase App Hosting configuration
+# See: https://firebase.google.com/docs/app-hosting/configure
+env:
+  - variable: NEXT_TELEMETRY_DISABLED
+    value: "1"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NODE_OPTIONS
+    value: "--max_old_space_size=2048"
+    availability:
+      - BUILD
+  - variable: NEXT_PUBLIC_APP_URL
+    value: "https://gliter.com.ar"
+    availability:
+      - RUNTIME
+  # Firebase configuration variables (required for build time)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyBs4YagBaR9gXnFLE_tfHhWARpOZdo7m38"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "soygay-b9bc5.firebaseapp.com"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "soygay-b9bc5"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "soygay-b9bc5.appspot.com"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "982386751624"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:982386751624:web:20a3ee764ec4c6f0da073d"
+    availability:
+      - BUILD
+      - RUNTIME

@@ -1,1 +1,10 @@
 node_modules
+.next
+out
+.env
+.env.local
+.env.production
+service-account-key.json
+firebase-debug.log
+*.log
+.DS_Store

@@ -10,6 +10,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:jsx-a11y/recommended',
     'plugin:@typescript-eslint/recommended', // Agregado para TypeScript
+    'next/core-web-vitals'
   ],
   parser: '@typescript-eslint/parser', // Agregado para TypeScript
   parserOptions: {

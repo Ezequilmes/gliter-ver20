@@ -14,21 +14,24 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.storage = exports.auth = exports.db = void 0;
-const app_1 = require("firebase-admin/app");
-const firestore_1 = require("firebase-admin/firestore");
-const auth_1 = require("firebase-admin/auth");
-const storage_1 = require("firebase-admin/storage");
-// Initialize Firebase Admin
-(0, app_1.initializeApp)();
-// Export Firebase services
-exports.db = (0, firestore_1.getFirestore)();
-exports.auth = (0, auth_1.getAuth)();
-exports.storage = (0, storage_1.getStorage)();
-// Export function modules
+exports.paymentsHandler = exports.chatHandler = exports.usersHandler = exports.authHandler = void 0;
+const https_1 = require("firebase-functions/v2/https");
+// Lightweight HTTP handlers to satisfy Hosting rewrites
+exports.authHandler = (0, https_1.onRequest)({ region: 'us-central1' }, async (req, res) => {
+    res.status(200).json({ ok: true, service: 'auth', message: 'Auth API placeholder' });
+});
+exports.usersHandler = (0, https_1.onRequest)({ region: 'us-central1' }, async (req, res) => {
+    res.status(200).json({ ok: true, service: 'users', message: 'Users API placeholder' });
+});
+exports.chatHandler = (0, https_1.onRequest)({ region: 'us-central1' }, async (req, res) => {
+    res.status(200).json({ ok: true, service: 'chat', message: 'Chat API placeholder' });
+});
+exports.paymentsHandler = (0, https_1.onRequest)({ region: 'us-central1' }, async (req, res) => {
+    res.status(200).json({ ok: true, service: 'payments', message: 'Payments API placeholder' });
+});
+// Export function modules (these should import from './admin' when needing Admin SDK)
 __exportStar(require("./auth"), exports);
 __exportStar(require("./users"), exports);
 __exportStar(require("./chat"), exports);
 __exportStar(require("./payments"), exports);
-console.log('Firebase Functions initialized successfully');
 //# sourceMappingURL=index.js.map

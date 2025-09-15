@@ -5,11 +5,12 @@ import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Heart, Search, Filter } from 'lucide-react';
 import { User } from '@/types';
+import type { User as FirebaseUser } from 'firebase/auth';
 import UserCard from '@/components/UserCard';
 import ProfileModal from '@/components/ProfileModal';
 
 const FavoritesPage = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [favorites, setFavorites] = useState<User[]>([]);
@@ -152,7 +153,7 @@ const FavoritesPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-accent-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-accent-500" />
       </div>
     );
   }
@@ -194,7 +195,9 @@ const FavoritesPage = () => {
           {/* Barra de búsqueda */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <label htmlFor="buscar-favoritos" className="sr-only">Buscar en favoritos</label>
             <input
+              id="buscar-favoritos"
               type="text"
               placeholder="Buscar en favoritos..."
               value={searchTerm}
@@ -217,7 +220,7 @@ const FavoritesPage = () => {
               ].map((filter) => (
                 <button
                   key={filter.key}
-                  onClick={() => setFilterBy(filter.key as any)}
+                  onClick={() => setFilterBy(filter.key as 'all' | 'online' | 'recent')}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                     filterBy === filter.key
                       ? 'bg-primary-500 text-white'

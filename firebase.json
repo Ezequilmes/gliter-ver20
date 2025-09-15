@@ -1,59 +1,65 @@
 {
-  "hosting": {
-    "site": "soygay-b9bc5",
-    "public": "out",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "customDomain": "gliter.com.ar",
-    "rewrites": [
-      {
-        "source": "/api/auth/**",
-        "function": {"region": "us-central1", "name": "authHandler"}
-      },
-      {
-        "source": "/api/users/**",
-        "function": {"region": "us-central1", "name": "usersHandler"}
-      },
-      {
-        "source": "/api/chat/**",
-        "function": {"region": "us-central1", "name": "chatHandler"}
-      },
-      {
-        "source": "/api/payments/**",
-        "function": {"region": "us-central1", "name": "paymentsHandler"}
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**/*.@(js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=31536000"
-          }
-        ]
-      },
-      {
-        "source": "**/*.@(html|json)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=0, no-cache, no-store, must-revalidate"
-          }
-        ]
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "site": "gliter-com-ar",
+      "public": "public",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        { "source": "/api/auth/**", "function": {"region": "us-central1", "functionId": "authHandler"} },
+        { "source": "/api/users/**", "function": {"region": "us-central1", "functionId": "usersHandler"} },
+        { "source": "/api/chat/**", "function": {"region": "us-central1", "functionId": "chatHandler"} },
+        { "source": "/api/payments/**", "function": {"region": "us-central1", "functionId": "paymentsHandler"} },
+        { "source": "**", "run": { "serviceId": "web-prod", "region": "us-central1" } }
+      ],
+      "headers": [
+        { "source": "**/*.@(js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ] },
+        { "source": "/_next/static/**", "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ] },
+        { "source": "**/*.@(html|json)", "headers": [ { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" } ] },
+        { "source": "**/*.txt", "headers": [ { "key": "Content-Type", "value": "text/plain; charset=utf-8" } ] },
+        { "source": "/**", "headers": [ 
+          { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" }
+        ] }
+      ],
+      "redirects": [
+        { "source": "/auth.html", "destination": "/", "type": 301 },
+        { "source": "/auth", "destination": "/", "type": 301 },
+        { "source": "/favicon.ico", "destination": "/icon.svg", "type": 301 }
+      ]
+    },
+    {
+      "target": "www",
+      "public": "public",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "redirects": [
+        { "source": "/**", "destination": "https://web-prod--soygay-b9bc5.us-central1.hosted.app", "type": 301 }
+      ]
+    }
+  ],
+  "apphosting": [
+    {
+      "backendId": "web-prod",
+      "rootDir": ".",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ]
+    }
+  ],
   "functions": {
     "source": "functions",
-    "runtime": "nodejs18"
+    "runtime": "nodejs20"
   },
   "firestore": {
     "rules": "firestore.rules.production",
@@ -66,23 +72,11 @@
     "rules": "database.rules.json"
   },
   "emulators": {
-    "auth": {
-      "port": 9099
-    },
-    "functions": {
-      "port": 5001
-    },
-    "firestore": {
-      "port": 8080
-    },
-    "hosting": {
-      "port": 5000
-    },
-    "storage": {
-      "port": 9199
-    },
-    "ui": {
-      "enabled": true
-    }
+    "auth": { "port": 9099 },
+    "functions": { "port": 5001 },
+    "firestore": { "port": 8080 },
+    "hosting": { "port": 5000 },
+    "storage": { "port": 9199 },
+    "ui": { "enabled": true }
   }
 }

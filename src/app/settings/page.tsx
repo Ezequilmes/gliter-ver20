@@ -8,8 +8,6 @@ import {
   User, 
   Bell, 
   Shield, 
-  MapPin, 
-  Heart, 
   Ban, 
   LogOut,
   Camera,
@@ -17,11 +15,12 @@ import {
   Save,
   X
 } from 'lucide-react';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { User as UserType } from '@/types';
 import Image from 'next/image';
 
 const SettingsPage = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [userProfile, setUserProfile] = useState<UserType | null>(null);
@@ -154,7 +153,7 @@ const SettingsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-accent-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-accent-500" />
       </div>
     );
   }
@@ -173,6 +172,7 @@ const SettingsPage = () => {
               <button
                 onClick={() => router.push('/')}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Volver"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
@@ -232,10 +232,11 @@ const SettingsPage = () => {
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
                       Nombre
                     </label>
                     <input
+                      id="nombre"
                       type="text"
                       value={editForm.nombre}
                       onChange={(e) => setEditForm({...editForm, nombre: e.target.value})}
@@ -245,10 +246,11 @@ const SettingsPage = () => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="edad" className="block text-sm font-medium text-gray-700 mb-1">
                         Edad
                       </label>
                       <input
+                        id="edad"
                         type="number"
                         value={editForm.edad}
                         onChange={(e) => setEditForm({...editForm, edad: parseInt(e.target.value)})}
@@ -259,10 +261,11 @@ const SettingsPage = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="genero" className="block text-sm font-medium text-gray-700 mb-1">
                         Género
                       </label>
                       <select
+                        id="genero"
                         value={editForm.genero}
                         onChange={(e) => setEditForm({...editForm, genero: e.target.value})}
                         className="input-field"
@@ -276,12 +279,13 @@ const SettingsPage = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="rolSexual" className="block text-sm font-medium text-gray-700 mb-1">
                       Rol Sexual
                     </label>
                     <select
+                      id="rolSexual"
                       value={editForm.rolSexual}
-                      onChange={(e) => setEditForm({...editForm, rolSexual: e.target.value as any})}
+                      onChange={(e) => setEditForm({...editForm, rolSexual: e.target.value as 'pasivo' | 'activo' | 'versátil' | ''})}
                       className="input-field"
                     >
                       <option value="">No especificar</option>
@@ -305,11 +309,15 @@ const SettingsPage = () => {
                   <p className="text-gray-600">{userProfile.edad} años • {userProfile.genero}</p>
                   <p className="text-gray-600">{userProfile.email}</p>
                   {userProfile.rolSexual && (
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                      userProfile.rolSexual === 'activo' ? 'bg-blue-100 text-blue-800' :
-                      userProfile.rolSexual === 'pasivo' ? 'bg-pink-100 text-pink-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                        userProfile.rolSexual === 'activo'
+                          ? 'bg-blue-100 text-blue-800'
+                          : userProfile.rolSexual === 'pasivo'
+                          ? 'bg-pink-100 text-pink-800'
+                          : 'bg-purple-100 text-purple-800'
+                      }`}
+                    >
                       {userProfile.rolSexual}
                     </span>
                   )}
@@ -332,26 +340,42 @@ const SettingsPage = () => {
               { key: 'messages', label: 'Mensajes', desc: 'Notificaciones de nuevos mensajes' },
               { key: 'likes', label: 'Likes recibidos', desc: 'Cuando alguien marca tu perfil como favorito' },
               { key: 'nearbyUsers', label: 'Usuarios cercanos', desc: 'Notificar cuando hay nuevos usuarios cerca' }
-            ].map((item) => (
-              <div key={item.key} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                <div>
-                  <h4 className="font-medium text-gray-900">{item.label}</h4>
-                  <p className="text-sm text-gray-500">{item.desc}</p>
+            ].map((item) => {
+              const inputId = `notif-${String(item.key)}`;
+              return (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                >
+                  <div>
+                    <h4 className="font-medium text-gray-900">{item.label}</h4>
+                    <p className="text-sm text-gray-500">{item.desc}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      aria-label={item.label}
+                      checked={notifications[item.key as keyof typeof notifications]}
+                      onChange={(e) =>
+                        setNotifications({
+                          ...notifications,
+                          [item.key]: e.target.checked,
+                        })
+                      }
+                      className="sr-only peer"
+                    />
+                    <label
+                      htmlFor={inputId}
+                      className="relative inline-flex items-center cursor-pointer"
+                    >
+                      <span className="sr-only">{item.label}</span>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
+                    </label>
+                  </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={notifications[item.key as keyof typeof notifications]}
-                    onChange={(e) => setNotifications({
-                      ...notifications,
-                      [item.key]: e.target.checked
-                    })}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                </label>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -368,26 +392,39 @@ const SettingsPage = () => {
               { key: 'showLocation', label: 'Mostrar ubicación', desc: 'Permitir que otros vean tu distancia aproximada' },
               { key: 'showOnlineStatus', label: 'Estado en línea', desc: 'Mostrar cuando estás activo' },
               { key: 'showRole', label: 'Mostrar rol sexual', desc: 'Otros usuarios pueden ver tu rol sexual' }
-            ].map((item) => (
-              <div key={item.key} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                <div>
-                  <h4 className="font-medium text-gray-900">{item.label}</h4>
-                  <p className="text-sm text-gray-500">{item.desc}</p>
+            ].map((item) => {
+              const inputId = `privacy-${String(item.key)}`;
+              return (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                >
+                  <div>
+                    <h4 className="font-medium text-gray-900">{item.label}</h4>
+                    <p className="text-sm text-gray-500">{item.desc}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      aria-label={item.label}
+                      checked={privacy[item.key as keyof typeof privacy]}
+                      onChange={(e) =>
+                        setPrivacy({
+                          ...privacy,
+                          [item.key]: e.target.checked,
+                        })
+                      }
+                      className="sr-only peer"
+                    />
+                    <label htmlFor={inputId} className="relative inline-flex items-center cursor-pointer">
+                      <span className="sr-only">{item.label}</span>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
+                    </label>
+                  </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={privacy[item.key as keyof typeof privacy]}
-                    onChange={(e) => setPrivacy({
-                      ...privacy,
-                      [item.key]: e.target.checked
-                    })}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                </label>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
