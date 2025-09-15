@@ -39,10 +39,9 @@ function toBase64Utf8(input: string): string {
   } catch {
     // Fallback por si el entorno no soporta unescape/encodeURIComponent correctamente
     if (typeof Buffer !== 'undefined') {
-      // @ts-ignore
       return Buffer.from(input, 'utf-8').toString('base64');
     }
-    return btoa(input.replace(/[^\x00-\x7F]/g, '?'));
+    return btoa(input.replace(/[^\x20-\x7E]/g, '?'));
   }
 }
 
@@ -139,7 +138,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gray-100">
         <main className="container mx-auto p-4">
-          <div className="text-center py-12 text-gray-500">Cargando sesion...</div>
+          <div className="text-center py-12 text-gray-500">Cargando sesión…</div>
         </main>
       </div>
     );

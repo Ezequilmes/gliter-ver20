@@ -15,12 +15,22 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize App Check with reCAPTCHA v3
-if (typeof window !== 'undefined' && !getApps().length) {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-'),
-    isTokenAutoRefreshEnabled: true
-  });
+// Initialize App Check with reCAPTCHA v3 (only in production and if not disabled)
+if (typeof window !== 'undefined' && !getApps().length && 
+    process.env.NODE_ENV === 'production' && 
+    process.env.NEXT_PUBLIC_DISABLE_APP_CHECK !== 'true') {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-'),
+      isTokenAutoRefreshEnabled: true
+    });
+    console.log('App Check initialized successfully');
+  } catch (error) {
+    console.warn('App Check initialization failed:', error);
+  }
+} else if (typeof window !== 'undefined') {
+  // For development or when App Check is disabled
+  console.log('App Check disabled - running in development mode or explicitly disabled');
 }
 
 const auth = getAuth(app);

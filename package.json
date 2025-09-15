@@ -9,7 +9,12 @@
     "start": "next start -p ${PORT:-8080}",
     "lint": "next lint",
     "deploy:check": "firebase --version && node --version && npm --version",
-    "deploy:prod": "npm run build && firebase deploy --only apphosting:web-prod --project soygay-b9bc5"
+    "deploy:prod": "npm run build && firebase deploy --only apphosting:web-prod --project soygay-b9bc5",
+    "setup:appcheck": "node scripts/setup-app-check.js",
+    "deploy:safe": "node scripts/deploy-with-checks.js",
+    "deploy": "firebase deploy --project soygay-b9bc5",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting --project soygay-b9bc5",
+    "deploy:rules": "firebase deploy --only firestore:rules --project soygay-b9bc5"
   },
   "engines": {
     "node": "20"

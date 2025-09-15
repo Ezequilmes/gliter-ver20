@@ -26,8 +26,7 @@
         ] }
       ],
       "redirects": [
-        { "source": "/auth.html", "destination": "/", "type": 301 },
-        { "source": "/auth", "destination": "/", "type": 301 },
+        { "source": "/auth.html", "destination": "/auth", "type": 301 },
         { "source": "/favicon.ico", "destination": "/icon.svg", "type": 301 }
       ]
     },

@@ -10,6 +10,11 @@ service cloud.firestore {
       return request.auth != null;
     }
     
+    function hasValidAppCheck() {
+      // In production, require valid App Check token
+      return request.app != null;
+    }
+    
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
@@ -32,14 +37,17 @@ service cloud.firestore {
     // User profiles - users can only read/write their own profile
     match /users/{userId} {
       allow read: if isAuthenticated() && 
+                     hasValidAppCheck() &&
                      (isOwner(userId) || isAdmin());
       allow write: if isOwner(userId) && 
                       isValidUser() &&
+                      hasValidAppCheck() &&
                       validateUserData();
       allow create: if isOwner(userId) && 
                        isValidUser() &&
+                       hasValidAppCheck() &&
                        validateUserData();
-      allow delete: if isOwner(userId) || isAdmin();
+      allow delete: if (isOwner(userId) || isAdmin()) && hasValidAppCheck();
       
       function validateUserData() {
         let data = request.resource.data;
@@ -51,14 +59,16 @@ service cloud.firestore {
     
     // Public user profiles (limited data for discovery)
     match /publicProfiles/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && hasValidAppCheck();
       allow write: if isOwner(userId) && 
                       isValidUser() &&
+                      hasValidAppCheck() &&
                       validatePublicProfileData();
       allow create: if isOwner(userId) && 
                        isValidUser() &&
+                       hasValidAppCheck() &&
                        validatePublicProfileData();
-      allow delete: if isOwner(userId) || isAdmin();
+      allow delete: if (isOwner(userId) || isAdmin()) && hasValidAppCheck();
       
       function validatePublicProfileData() {
         let data = request.resource.data;
@@ -81,16 +91,19 @@ service cloud.firestore {
     // Chat conversations
     match /conversations/{conversationId} {
       allow read: if isAuthenticated() && 
+                     hasValidAppCheck() &&
                      (request.auth.uid in resource.data.participants || isAdmin());
       allow write: if isAuthenticated() && 
                       isValidUser() &&
+                      hasValidAppCheck() &&
                       request.auth.uid in resource.data.participants &&
                       validateConversationData();
       allow create: if isAuthenticated() && 
                        isValidUser() &&
+                       hasValidAppCheck() &&
                        request.auth.uid in request.resource.data.participants &&
                        validateConversationData();
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() && hasValidAppCheck();
       
       function validateConversationData() {
         let data = request.resource.data;
