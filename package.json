@@ -19,12 +19,12 @@
     "deploy:rules": "firebase deploy --only firestore:rules --project soygay-b9bc5"
   },
   "engines": {
-    "node": "20"
+    "node": ">=20"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
-    "date-fns": "^2.30.0",
-    "firebase": "^10.12.0",
+    "date-fns": "^4.1.0",
+    "firebase": "^12.2.1",
     "lucide-react": "^0.303.0",
     "next": "14.2.32",
     "postcss": "^8.4.33",

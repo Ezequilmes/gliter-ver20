@@ -1,5 +1,11 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/auth/page": "app/auth/page.js",
   "/page": "app/page.js",
-  "/auth/page": "app/auth/page.js"
+  "/chat/page": "app/chat/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/favorites/page": "app/favorites/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/chat/[chatId]/page": "app/chat/[chatId]/page.js"
 }
