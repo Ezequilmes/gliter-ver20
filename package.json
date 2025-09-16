@@ -13,6 +13,7 @@
     "setup:appcheck": "node scripts/setup-app-check.js",
     "deploy:safe": "node scripts/deploy-with-checks.js",
     "verify:production": "node scripts/verify-production.js",
+    "test:auth": "node scripts/test-auth.js",
     "deploy": "firebase deploy --project soygay-b9bc5",
     "deploy:hosting": "npm run build && firebase deploy --only hosting --project soygay-b9bc5",
     "deploy:rules": "firebase deploy --only firestore:rules --project soygay-b9bc5"

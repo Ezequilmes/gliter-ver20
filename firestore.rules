@@ -40,8 +40,17 @@ service cloud.firestore {
     function isValidUserUpdate() {
       // Validar que no se excedan los límites de fotos/videos
       let isPremium = request.auth.token.premium == true;
-      let photosCount = request.resource.data.photos.additionalPhotos.size() + 1; // +1 por mainPhoto
-      let videosCount = request.resource.data.videos != null ? request.resource.data.videos.size() : 0;
+      
+      // Verificar si existen los campos de fotos antes de validar
+      let hasPhotos = 'photos' in request.resource.data && 'additionalPhotos' in request.resource.data.photos;
+      let hasVideos = 'videos' in request.resource.data;
+      
+      if (!hasPhotos && !hasVideos) {
+        return true; // Permitir actualizaciones que no involucren fotos/videos
+      }
+      
+      let photosCount = hasPhotos ? request.resource.data.photos.additionalPhotos.size() + 1 : 1;
+      let videosCount = hasVideos && request.resource.data.videos != null ? request.resource.data.videos.size() : 0;
       
       return (isPremium && photosCount <= 4 && videosCount <= 1) || 
              (!isPremium && photosCount <= 2 && videosCount == 0);
@@ -49,9 +58,13 @@ service cloud.firestore {
     
     function isValidUserCreation() {
       // Validar creación inicial de usuario
-      return request.resource.data.keys().hasAll(['name', 'email']) &&
-             request.resource.data.name is string &&
-             request.resource.data.email is string;
+      return request.resource.data.keys().hasAll(['nombre', 'email', 'edad', 'genero']) &&
+             request.resource.data.nombre is string &&
+             request.resource.data.email is string &&
+             request.resource.data.edad is number &&
+             request.resource.data.genero is string &&
+             request.resource.data.edad >= 18 &&
+             request.resource.data.edad <= 100;
     }
     // Chat collections - secure rules
     match /chats/{chatId} {
@@ -193,6 +206,19 @@ service cloud.firestore {
       // Permitir eliminar solo al destinatario
       allow delete: if isAuthenticated() && 
         resource.data.userId == request.auth.uid;
+    }
+    
+    // Reglas para perfiles públicos (para descubrimiento)
+    match /publicProfiles/{userId} {
+      // Permitir lectura a usuarios autenticados
+      allow read: if isAuthenticated();
+      
+      // Permitir escritura solo al propietario
+      allow write: if isAuthenticated() && isOwner(userId);
+      
+      // Permitir crear perfil público durante el registro
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.id;
     }
     
     // Reglas para usuarios
