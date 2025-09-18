@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, X, MapPin } from 'lucide-react';
 import { AuthFormData } from '@/types';
 import { useUserLocation } from '@/hooks/useUserLocation';
@@ -29,7 +29,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [useLocation, setUseLocation] = useState(false);
-  const { location, loading: locationLoading, error: locationError } = useUserLocation();
+  const { location, loading: locationLoading, error: locationError, refetch: requestLocation } = useUserLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const additionalFilesRef = useRef<HTMLInputElement>(null);
 
@@ -93,13 +93,23 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
   };
 
   const handleLocationToggle = () => {
-    setUseLocation(!useLocation);
-    if (!useLocation && location) {
-      setFormData(prev => ({ ...prev, ubicacion: location }));
+    const newUseLocation = !useLocation;
+    setUseLocation(newUseLocation);
+    
+    if (newUseLocation) {
+      // Request location only when user activates the toggle
+      requestLocation();
     } else {
       setFormData(prev => ({ ...prev, ubicacion: undefined }));
     }
   };
+
+  // Update form data when location is obtained
+  useEffect(() => {
+    if (useLocation && location) {
+      setFormData(prev => ({ ...prev, ubicacion: location }));
+    }
+  }, [location, useLocation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,7 +145,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
         
         <div>
           <label htmlFor="password-login" className="block text-sm font-medium text-gray-700 mb-1">
-            Contraseña
+            Contrasena
           </label>
           <input
             type="password"
@@ -153,7 +163,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
           disabled={loading}
           className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          {loading ? 'Iniciando sesion...' : 'Iniciar Sesion'}
         </button>
       </form>
     );
@@ -161,7 +171,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Información básica */}
+      {/* Informacion basica */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
@@ -198,7 +208,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
       
       <div>
         <label htmlFor="genero" className="block text-sm font-medium text-gray-700 mb-1">
-          Género
+          Genero
         </label>
         <select
           id="genero"
@@ -208,7 +218,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
           className="input-field"
           required
         >
-          <option value="">Selecciona tu género</option>
+          <option value="">Selecciona tu genero</option>
           <option value="Hombre">Hombre</option>
           <option value="Mujer">Mujer</option>
           <option value="No binario">No binario</option>
@@ -230,7 +240,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
           <option value="">No especificar</option>
           <option value="activo">Activo</option>
           <option value="pasivo">Pasivo</option>
-          <option value="versátil">Versátil</option>
+          <option value="versatil">Versatil</option>
         </select>
       </div>
       
@@ -251,7 +261,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
       
       <div>
         <label htmlFor="password-register" className="block text-sm font-medium text-gray-700 mb-1">
-          Contraseña
+          Contrasena
         </label>
         <input
           type="password"
@@ -279,17 +289,17 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
 
       {useLocation && locationLoading && (
         <p className="text-sm text-gray-500 flex items-center">
-          <MapPin className="w-4 h-4 mr-1" /> Obteniendo ubicación...
+          <MapPin className="w-4 h-4 mr-1" /> Obteniendo ubicacion...
         </p>
       )}
       {useLocation && locationError && (
         <p className="text-sm text-red-500 flex items-center">
-          <X className="w-4 h-4 mr-1" /> Error al obtener ubicación: {locationError}
+          <X className="w-4 h-4 mr-1" /> Error al obtener ubicacion: {locationError}
         </p>
       )}
       {useLocation && location && (
         <p className="text-sm text-green-600 flex items-center">
-          <MapPin className="w-4 h-4 mr-1" /> Ubicación obtenida: {location.lat.toFixed(2)}, {location.lng.toFixed(2)}
+          <MapPin className="w-4 h-4 mr-1" /> Ubicacion obtenida: {location.lat.toFixed(2)}, {location.lng.toFixed(2)}
         </p>
       )}
 
@@ -333,7 +343,7 @@ const AuthForm = ({ isLogin, loading, onLogin, onRegister }: AuthFormProps) => {
 
       <div>
         <label htmlFor="additional-photos" className="block text-sm font-medium text-gray-700 mb-1">
-          Fotos Adicionales (Máx. 2)
+          Fotos Adicionales (Max. 2)
         </label>
         <input
           type="file"

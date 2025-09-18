@@ -34,9 +34,8 @@ export const useUserLocation = () => {
     );
   };
 
-  useEffect(() => {
-    getCurrentLocation();
-  }, []);
+  // Removed automatic location request on mount
+  // Location will only be requested when explicitly called via refetch
 
   return {
     location,

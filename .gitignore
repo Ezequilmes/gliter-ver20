@@ -15,6 +15,18 @@ firebase-debug.log
 firebase-debug.log*
 firebase-debug.*.log*
 
+# Terraform
+terraform/
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Scripts and temporary files
+scripts/
+test-*.js
+verify-*.js
+
 # Logs
 logs
 *.log
