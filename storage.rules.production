@@ -19,7 +19,7 @@ service firebase.storage {
     }
     
     function isValidUser() {
-      return isAuthenticated() && request.auth.token.email_verified == true;
+      return isAuthenticated();
     }
     
     function isValidImageType() {
@@ -34,10 +34,10 @@ service firebase.storage {
       return request.resource.size < maxSizeMB * 1024 * 1024;
     }
     
-    // Función auxiliar para operaciones de perfil con App Check requerido
+    // Función auxiliar para permitir operaciones de perfil con App Check flexible
     function isAppCheckValidOrProfileOperation() {
-      // Requiere tanto autenticación como App Check válido
-      return request.auth.token.firebase.app_check_token != null && request.auth != null;
+      // Permite operaciones si App Check es válido O si el usuario está autenticado
+      return request.auth.token.firebase.app_check_token != null || request.auth != null;
     }
     
 

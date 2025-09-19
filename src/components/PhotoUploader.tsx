@@ -31,13 +31,13 @@ export default function PhotoUploader({
     }
 
     if (!firebaseUser) {
-      const error = 'Usuario no autenticado. Por favor, inicia sesión nuevamente.';
+      const error = 'User not authenticated. Please log in again.';
       onUploadError?.(error);
       console.error('PhotoUploader: User not authenticated');
       return;
     }
 
-    // Si no es múltiple, solo procesar el primer archivo
+    // If not multiple, only process the first file
     const filesToProcess = multiple ? Array.from(files) : [files[0]];
 
     setUploading(true);
@@ -54,7 +54,7 @@ export default function PhotoUploader({
           throw new Error(`Archivo "${file.name}": ${validation.error}`);
         }
 
-        // Simular progreso (en una implementación real usarías uploadBytesResumable)
+        // Simulate progress (in a real implementation you would use uploadBytesResumable)
         setUploadProgress(prev => ({ ...prev, [fileId]: 0 }));
         
         try {
@@ -68,7 +68,7 @@ export default function PhotoUploader({
         } catch (error) {
           setUploadProgress(prev => ({ ...prev, [fileId]: -1 })); // -1 indica error
           
-          // Mejorar mensajes de error específicos de Firebase
+          // Improve Firebase-specific error messages
           let errorMessage = `Error al subir "${file.name}": `;
           
           if (error instanceof Error) {
@@ -189,12 +189,17 @@ export default function PhotoUploader({
         <label
           htmlFor={`photo-upload-${photoType}`}
           className={`
-            flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed
-            transition-all duration-200 cursor-pointer
+            flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer
             ${
-              uploading || !firebaseUser
-                ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
-                : 'border-blue-300 bg-blue-50 text-blue-700 hover:border-blue-400 hover:bg-blue-100'
+              photoType === 'profile' && className.includes('rounded-full')
+                ? // Estilo para overlay circular en foto de perfil
+                  uploading || !firebaseUser
+                    ? 'w-10 h-10 rounded-full bg-gray-400 text-white cursor-not-allowed'
+                    : 'w-10 h-10 rounded-full bg-blue-500 text-white hover:bg-blue-600'
+                : // Estilo normal para uploader completo
+                  uploading || !firebaseUser
+                    ? 'px-4 py-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
+                    : 'px-4 py-2 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 text-blue-700 hover:border-blue-400 hover:bg-blue-100'
             }
           `}
         >
@@ -203,14 +208,17 @@ export default function PhotoUploader({
           ) : (
             <Upload className="w-5 h-5" />
           )}
-          <span className="text-sm font-medium">
-            {getButtonText()}
-          </span>
+          {/* Solo mostrar texto si no es un overlay circular */}
+          {!(photoType === 'profile' && className.includes('rounded-full')) && (
+            <span className="text-sm font-medium">
+              {getButtonText()}
+            </span>
+          )}
         </label>
       </div>
 
-      {/* Mostrar progreso de subida */}
-      {Object.keys(uploadProgress).length > 0 && (
+      {/* Mostrar progreso de subida - solo si no es overlay circular */}
+      {Object.keys(uploadProgress).length > 0 && !(photoType === 'profile' && className.includes('rounded-full')) && (
         <div className="mt-3 space-y-2">
           {Object.entries(uploadProgress).map(([fileId, progress]) => {
             const fileName = fileId.split('_')[0];
@@ -236,19 +244,21 @@ export default function PhotoUploader({
         </div>
       )}
 
-      {/* Información de ayuda */}
-      <div className="mt-2 text-xs text-gray-500">
-        {photoType === 'profile' ? (
-          <p>Formatos: JPG, PNG, WebP. Máximo 5MB.</p>
-        ) : (
-          <p>Formatos: JPG, PNG, WebP. Máximo 10MB por foto. {multiple ? 'Múltiples archivos permitidos.' : ''}</p>
-        )}
-      </div>
+      {/* Información de ayuda - solo mostrar si no es overlay circular */}
+      {!(photoType === 'profile' && className.includes('rounded-full')) && (
+        <div className="mt-2 text-xs text-gray-500">
+          {photoType === 'profile' ? (
+            <p>Formatos: JPG, PNG, WebP. Máximo 5MB.</p>
+          ) : (
+            <p>Formatos: JPG, PNG, WebP. Máximo 10MB por foto. {multiple ? 'Múltiples archivos permitidos.' : ''}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-// Componente específico para foto de perfil
+// Specific component for profile photo
 export function ProfilePhotoUploader({ 
   onUploadSuccess, 
   onUploadError, 
@@ -265,7 +275,7 @@ export function ProfilePhotoUploader({
   );
 }
 
-// Componente específico para galería de fotos
+// Specific component for photo gallery
 export function GalleryPhotoUploader({ 
   onUploadSuccess, 
   onUploadError, 

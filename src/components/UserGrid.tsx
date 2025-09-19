@@ -5,6 +5,8 @@ import { User } from '@/types';
 import UserCard from './UserCard';
 import ProfileModal from './ProfileModal';
 import { calculateDistance } from '@/utils/location';
+import { useAuth } from '@/hooks/useAuth';
+import { addToFavorites, removeFromFavorites, blockUser } from '@/utils/userActions';
 
 interface UserGridProps {
   initialUsers: User[];
@@ -17,6 +19,7 @@ const UserGrid = ({ initialUsers, loadMoreUsers, hasMore }: UserGridProps) => {
   const [loading, setLoading] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const { user: currentUser, firebaseUser } = useAuth();
 
   useEffect(() => {
     setUsers(initialUsers);
@@ -35,19 +38,34 @@ const UserGrid = ({ initialUsers, loadMoreUsers, hasMore }: UserGridProps) => {
     }
   }, [loading, hasMore, loadMoreUsers]);
 
-  const handleFavorite = useCallback((userId: string) => {
-    console.log(`User ${userId} favorited`);
-    // Implementar lógica de favoritos
-  }, []);
+  const handleFavorite = useCallback(async (userId: string) => {
+    if (!firebaseUser) return;
+    
+    try {
+      // Aquí podrías verificar si ya es favorito y alternar
+      await addToFavorites(firebaseUser, userId);
+      console.log('Usuario agregado a favoritos:', userId);
+    } catch (error) {
+      console.error('Error al agregar a favoritos:', error);
+    }
+  }, [firebaseUser]);
 
-  const handleBlock = useCallback((userId: string) => {
-    console.log(`User ${userId} blocked`);
-    // Implementar lógica de bloqueo
-  }, []);
+  const handleBlock = useCallback(async (userId: string) => {
+    if (!firebaseUser) return;
+    
+    try {
+      await blockUser(firebaseUser, userId);
+      console.log('Usuario bloqueado:', userId);
+      // Remover el usuario de la lista actual
+      setUsers(users.filter(user => user.uid !== userId));
+    } catch (error) {
+      console.error('Error al bloquear usuario:', error);
+    }
+  }, [firebaseUser, users]);
 
   const handleChat = useCallback((userId: string) => {
     console.log(`Chat with user ${userId}`);
-    // Implementar lógica de chat
+    window.location.href = `/chat/${userId}`;
   }, []);
 
   const handleViewProfile = useCallback((userId: string) => {

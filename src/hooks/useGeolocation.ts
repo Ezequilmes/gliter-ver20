@@ -44,17 +44,17 @@ const useGeolocation = (options?: PositionOptions): UseGeolocationReturn => {
   }, []);
 
   const handleError = useCallback((err: GeolocationPositionError) => {
-    let errorMessage = 'Error desconocido obteniendo ubicación';
+    let errorMessage = 'Error desconocido obteniendo ubicacion';
     
     switch (err.code) {
       case err.PERMISSION_DENIED:
-        errorMessage = 'Permiso de ubicación denegado por el usuario';
+        errorMessage = 'Permiso de ubicacion denegado por el usuario';
         break;
       case err.POSITION_UNAVAILABLE:
-        errorMessage = 'Información de ubicación no disponible';
+        errorMessage = 'Informacion de ubicacion no disponible';
         break;
       case err.TIMEOUT:
-        errorMessage = 'Tiempo de espera agotado para obtener ubicación';
+        errorMessage = 'Tiempo de espera agotado para obtener ubicacion';
         break;
     }
 
@@ -71,7 +71,7 @@ const useGeolocation = (options?: PositionOptions): UseGeolocationReturn => {
     if (!isSupported) {
       setError({
         code: -1,
-        message: 'Geolocalización no soportada por este navegador'
+        message: 'Geolocalizacion no soportada por este navegador'
       });
       return null;
     }
@@ -110,7 +110,7 @@ const useGeolocation = (options?: PositionOptions): UseGeolocationReturn => {
     if (!isSupported) {
       setError({
         code: -1,
-        message: 'Geolocalización no soportada por este navegador'
+        message: 'Geolocalizacion no soportada por este navegador'
       });
       return null;
     }

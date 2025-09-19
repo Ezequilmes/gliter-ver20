@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -28,7 +29,7 @@ import CreditStore from '@/components/CreditStore';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const SettingsPage = () => {
-  const { user } = useAuthContext();
+  const { user, refreshUser } = useAuthContext();
   const { credits } = useCredits();
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -66,78 +67,66 @@ const SettingsPage = () => {
 
 
 
-  // Mock data para demo
+  // Cargar datos reales del usuario desde Firestore
   useEffect(() => {
-    if (user) {
-      const mockProfile: UserType = {
-        uid: user.uid,
-        nombre: 'Tu Usuario',
-        edad: 25,
-        genero: 'Hombre',
-        ubicacion: { lat: -34.6037, lng: -58.3816 },
-        rolSexual: 'versatil',
-        fotoPerfil: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        fotosAdicionales: [
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop'
-        ],
-        favoritos: [],
-        bloqueados: ['blocked1', 'blocked2'],
-        lastOnline: new Date(),
-        email: user.email || 'tu@example.com'
-      };
-
-      const mockBlockedUsers: UserType[] = [
-        {
-          uid: 'blocked1',
-          nombre: 'Usuario Bloqueado 1',
-          edad: 30,
-          genero: 'Hombre',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: null,
-          fotoPerfil: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(),
-          email: 'blocked1@example.com'
-        },
-        {
-          uid: 'blocked2',
-          nombre: 'Usuario Bloqueado 2',
-          edad: 28,
-          genero: 'Mujer',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'pasivo',
-          fotoPerfil: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(),
-          email: 'blocked2@example.com'
+    const loadUserProfile = async () => {
+      if (user) {
+        try {
+          // Usar los datos del contexto de autenticación que ya vienen de Firestore
+          setUserProfile(user);
+          setEditForm({
+            nombre: user.nombre || '',
+            edad: user.edad || 18,
+            genero: user.genero || '',
+            rolSexual: (user.rolSexual === null || user.rolSexual === undefined ? '' : user.rolSexual) as 'pasivo' | 'activo' | 'versatil' | '',
+          });
+          
+          // Para usuarios bloqueados, podrías cargarlos desde Firestore si es necesario
+          // Por ahora usamos un array vacío
+          setBlockedUsers([]);
+        } catch (error) {
+          console.error('Error al cargar perfil:', error);
         }
-      ];
-
-      setUserProfile(mockProfile);
-      setEditForm({
-        nombre: mockProfile.nombre,
-        edad: mockProfile.edad,
-        genero: mockProfile.genero,
-        rolSexual: (mockProfile.rolSexual === null ? '' : mockProfile.rolSexual) as 'pasivo' | 'activo' | 'versatil' | '',
-      });
-      setBlockedUsers(mockBlockedUsers);
-    }
+      }
+    };
+    
+    loadUserProfile();
   }, [user]);
 
-  const handleSaveProfile = () => {
-    if (userProfile) {
+  const handleSaveProfile = async () => {
+    if (!userProfile || !user) return;
+    
+    setLoading(true);
+    try {
       const updatedProfile = {
         ...userProfile,
         ...editForm,
         rolSexual: editForm.rolSexual === '' ? null : editForm.rolSexual
       };
+      
+      // Actualizar en Firestore
+      await updateDoc(doc(db, 'users', user.uid), {
+        nombre: editForm.nombre,
+        edad: editForm.edad,
+        genero: editForm.genero,
+        rolSexual: editForm.rolSexual === '' ? null : editForm.rolSexual,
+        updatedAt: new Date()
+      });
+      
+      // Refrescar datos del usuario en el contexto
+      await refreshUser();
+      
+      // Actualizar estado local
       setUserProfile(updatedProfile);
       setIsEditing(false);
-      console.log('Perfil actualizado:', updatedProfile);
+      
+      // Mostrar mensaje de éxito
+      alert('Perfil actualizado correctamente');
+    } catch (error) {
+      console.error('Error al actualizar perfil:', error);
+      alert('Error al actualizar el perfil. Inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
     }
   };
 

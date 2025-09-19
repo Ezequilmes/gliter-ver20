@@ -55,14 +55,14 @@ const Header = () => {
           {/* Navigation Icons */}
           <div className="flex items-center space-x-1 md:space-x-3">
             {!isClient || loadingAuth ? (
-              // Estado de loading durante hidratación o autenticación
+              // Loading state during hydration or authentication
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
                 <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
                 <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
               </div>
             ) : isAuthenticated ? (
-              // Usuario autenticado - mostrar navegación completa
+              // Authenticated user - show complete navigation
               <>
                 <button
                   onClick={() => router.push('/explore')}
@@ -132,7 +132,7 @@ const Header = () => {
                 </div>
               </>
             ) : (
-              // Usuario no autenticado o autenticación cargando - mostrar botones de login/registro
+              // Unauthenticated user or authentication loading - show login/register buttons
               <>
                 <button
                   onClick={() => router.push('/auth')}

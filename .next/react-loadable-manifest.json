@@ -4,9 +4,5 @@
     "files": [
       "static/chunks/673.5a1887a384dfcf7b.js"
     ]
-  },
-  "lib\\firebase.ts -> firebase/firestore": {
-    "id": 5978,
-    "files": []
   }
 }

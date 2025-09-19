@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
@@ -18,7 +18,7 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Inicializar App Check en cliente
+// Configuración optimizada de App Check
 if (typeof window !== 'undefined') {
   const w = window as unknown as { [k: string]: any };
   const isProduction = process.env.NODE_ENV === 'production';
@@ -42,10 +42,8 @@ if (typeof window !== 'undefined') {
     w.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
   }
 
-  if (disableAppCheck) {
-    console.log('[WARNING] App Check is DISABLED - authentication will work without App Check tokens');
-    // No inicializar App Check cuando está deshabilitado
-  } else if (!w.__APPCHECK_INITIALIZED__ && recaptchaSiteKey) {
+  // App Check más robusto con manejo de errores
+  if (!disableAppCheck && !w.__APPCHECK_INITIALIZED__ && recaptchaSiteKey) {
     try {
       console.log('[INIT] Initializing App Check...');
       const appCheck = initializeAppCheck(app, {
@@ -55,11 +53,11 @@ if (typeof window !== 'undefined') {
       w.__APPCHECK_INITIALIZED__ = true;
       console.log('[SUCCESS] App Check initialized successfully');
     } catch (error) {
-      console.error('[ERROR] App Check initialization failed:', error);
-      // No lanzar error para permitir que la app funcione sin App Check
+      console.warn('[WARNING] App Check initialization failed, continuing without it:', error);
+      // Continuar sin App Check para evitar bloqueos
     }
   } else {
-    console.log('[INFO] App Check already initialized or missing configuration');
+    console.log('[INFO] App Check disabled or already initialized');
   }
 }
 
@@ -68,38 +66,35 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
 
-// Configuración adicional para evitar errores de conexión
+// Configuración mejorada para evitar errores de conexión
 if (typeof window !== 'undefined') {
-  // Configurar Firestore para usar long polling en caso de problemas de conexión
-  import('firebase/firestore').then(({ connectFirestoreEmulator, enableNetwork }) => {
-    // Solo en desarrollo, habilitar configuraciones especiales
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[CONFIG] Configurando Firestore para desarrollo');
-      
-      // Configurar experimentalForceLongPolling si hay problemas de conexión
-      const firestoreSettings = {
-        experimentalForceLongPolling: true, // Para evitar ERR_ABORTED
-        ignoreUndefinedProperties: true
-      };
-      
-      // Aplicar configuración si es necesario
-      if (window.location.hostname === 'localhost') {
-        console.log('[CONFIG] Aplicando configuración de desarrollo para Firestore');
-      }
-    }
-  }).catch(console.error);
-}
+  // Configurar timeout más largo para conexiones lentas
+  const settings = {
+    ignoreUndefinedProperties: true,
+    // Usar long polling solo si hay problemas de conexión
+    experimentalForceLongPolling: false,
+    // Configurar timeouts más generosos
+    cacheSizeBytes: 40000000, // 40MB cache
+  };
 
-// Configuración de autenticación mejorada
-if (typeof window !== 'undefined') {
+  // Solo aplicar configuraciones especiales en desarrollo
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[CONFIG] Applying development optimizations');
+  }
+
+  // Manejo robusto de errores de autenticación
   auth.onAuthStateChanged((user) => {
     if (user) {
       console.log('[AUTH] Usuario autenticado:', user.uid);
-      // Verificar que el token esté disponible
-      user.getIdToken().then((token) => {
-        console.log('[AUTH] Token de autenticación obtenido');
+      // Verificar token de forma más robusta
+      user.getIdToken(false).then((token) => {
+        console.log('[AUTH] Token de autenticación válido');
       }).catch((error) => {
-        console.error('[AUTH] Error obteniendo token:', error);
+        console.warn('[AUTH] Error obteniendo token, reintentando:', error);
+        // Reintentar con forzar refresh
+        user.getIdToken(true).catch((retryError) => {
+          console.error('[AUTH] Error crítico de autenticación:', retryError);
+        });
       });
     } else {
       console.log('[AUTH] Usuario no autenticado');

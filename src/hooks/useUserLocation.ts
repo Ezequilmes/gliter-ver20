@@ -11,7 +11,7 @@ export const useUserLocation = () => {
     setError(null);
 
     if (!navigator.geolocation) {
-      setError('Geolocalización no soportada por este navegador');
+      setError('Geolocalizacion no soportada por este navegador');
       setLoading(false);
       return;
     }
@@ -23,7 +23,7 @@ export const useUserLocation = () => {
         setLoading(false);
       },
       (error) => {
-        setError('Error obteniendo ubicación: ' + error.message);
+        setError('Error obteniendo ubicacion: ' + error.message);
         setLoading(false);
       },
       {

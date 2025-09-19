@@ -124,7 +124,7 @@ export const useNotifications = (): UseNotificationsReturn => {
       // Mostrar notificación personalizada
       if (payload.notification) {
         sendNotification({
-          title: payload.notification.title || 'Nueva notificación',
+          title: payload.notification.title || 'Nueva notificacion',
           body: payload.notification.body || '',
           icon: payload.notification.icon || '/icon.svg',
           data: payload.data
@@ -138,7 +138,7 @@ export const useNotifications = (): UseNotificationsReturn => {
   // Solicitar permisos de notificación
   const requestPermission = async (): Promise<boolean> => {
     if (!isSupported) {
-      console.warn('Las notificaciones no están soportadas en este navegador');
+      console.warn('Las notificaciones no estan soportadas en este navegador');
       return false;
     }
 
@@ -147,10 +147,10 @@ export const useNotifications = (): UseNotificationsReturn => {
       setPermission(result);
       
       if (result === 'granted') {
-        console.log('Permisos de notificación concedidos');
+        console.log('Permisos de notificacion concedidos');
         return true;
       } else {
-        console.log('Permisos de notificación denegados');
+        console.log('Permisos de notificacion denegados');
         return false;
       }
     } catch (error) {

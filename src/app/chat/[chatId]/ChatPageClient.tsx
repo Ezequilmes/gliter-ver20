@@ -90,25 +90,52 @@ const ChatPageClient = () => {
           bloqueados: [],
           lastOnline: new Date(Date.now() - 3600000),
           email: 'sofia@example.com'
-        },
-        'default': {
-          uid: 'unknown-user',
-          nombre: 'Usuario Desconocido',
-          edad: 25,
-          genero: 'No especificado',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: null,
-          fotoPerfil: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(),
-          email: 'unknown@example.com'
         }
       };
 
+      // Generate mock user for any chatId
+      const generateMockUser = (userId: string): User => {
+        const names = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Morgan', 'Riley', 'Avery', 'Quinn'];
+        const randomName = names[userId.charCodeAt(0) % names.length];
+        const randomAge = 20 + (userId.charCodeAt(1) % 15);
+        const genders = ['Hombre', 'Mujer', 'No binario'];
+        const randomGender = genders[userId.charCodeAt(2) % genders.length];
+        const roles: (User['rolSexual'])[] = ['activo', 'pasivo', 'versatil'];
+        const randomRole = roles[userId.charCodeAt(3) % roles.length];
+        
+        return {
+          uid: userId,
+          nombre: randomName,
+          edad: randomAge,
+          genero: randomGender,
+          ubicacion: { lat: -34.6037, lng: -58.3816 },
+          rolSexual: randomRole,
+          fotoPerfil: `https://images.unsplash.com/photo-${1400000000000 + (userId.charCodeAt(0) * 1000000)}?w=150&h=150&fit=crop&crop=face`,
+          fotosAdicionales: [],
+          favoritos: [],
+          bloqueados: [],
+          lastOnline: new Date(Date.now() - (userId.charCodeAt(4) % 3600000)),
+          email: `${randomName.toLowerCase()}@example.com`
+        };
+      };
+
+      const defaultUser: User = {
+        uid: 'unknown-user',
+        nombre: 'Usuario Desconocido',
+        edad: 25,
+        genero: 'No especificado',
+        ubicacion: { lat: -34.6037, lng: -58.3816 },
+        rolSexual: null,
+        fotoPerfil: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+        fotosAdicionales: [],
+        favoritos: [],
+        bloqueados: [],
+        lastOnline: new Date(),
+        email: 'unknown@example.com'
+      };
+
       setCurrentUser(mockCurrentUser);
-      setOtherUser(mockUsers[chatId] || mockUsers['default']);
+      setOtherUser(mockUsers[chatId] || generateMockUser(chatId));
     }
   }, [user, chatId]);
 

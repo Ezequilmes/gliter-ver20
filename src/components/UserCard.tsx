@@ -3,6 +3,9 @@
 import { User } from '@/types';
 import Image from 'next/image';
 import { MapPin, MessageCircle, Ban, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { addToFavorites, removeFromFavorites, blockUser, isUserFavorite } from '@/utils/userActions';
 
 interface UserCardProps {
   user: User;
@@ -14,9 +17,72 @@ interface UserCardProps {
 }
 
 const UserCard = ({ user, distance, onFavorite, onBlock, onChat, onViewProfile }: UserCardProps) => {
+  const { user: currentUser, firebaseUser } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Verificar si el usuario es favorito al cargar el componente
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (firebaseUser) {
+        try {
+          const favoriteStatus = await isUserFavorite(firebaseUser, user.uid);
+          setIsFavorite(favoriteStatus);
+        } catch (error) {
+          console.error('Error verificando estado de favorito:', error);
+        }
+      }
+    };
+    
+    checkFavoriteStatus();
+  }, [firebaseUser, user.uid]);
+
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       action();
+    }
+  };
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!firebaseUser || isProcessing) return;
+    
+    setIsProcessing(true);
+    try {
+      if (isFavorite) {
+        await removeFromFavorites(firebaseUser, user.uid);
+        setIsFavorite(false);
+      } else {
+        await addToFavorites(firebaseUser, user.uid);
+        setIsFavorite(true);
+      }
+      onFavorite(user.uid); // Llamar callback para actualizar UI padre
+    } catch (error) {
+      console.error('Error al manejar favorito:', error);
+      alert(error instanceof Error ? error.message : 'Error al procesar favorito');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleBlockClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!firebaseUser || isProcessing) return;
+    
+    const confirmBlock = window.confirm(`¿Estás seguro de que quieres bloquear a ${user.nombre}?`);
+    if (!confirmBlock) return;
+    
+    setIsProcessing(true);
+    try {
+      await blockUser(firebaseUser, user.uid);
+      onBlock(user.uid); // Llamar callback para actualizar UI padre
+    } catch (error) {
+      console.error('Error al bloquear usuario:', error);
+      alert(error instanceof Error ? error.message : 'Error al bloquear usuario');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -54,20 +120,28 @@ const UserCard = ({ user, distance, onFavorite, onBlock, onChat, onViewProfile }
           <h3 className="text-lg font-semibold text-gray-900">{user.nombre}</h3>
           <div className="flex space-x-2">
             <button
-              onClick={() => onFavorite(user.uid)}
-              className="p-1 text-gray-400 hover:text-yellow-500 transition-colors"
-              aria-label="Agregar a favoritos"
+              onClick={handleFavoriteClick}
+              disabled={isProcessing}
+              className={`p-1 transition-colors ${
+                isFavorite 
+                  ? 'text-yellow-500 hover:text-yellow-600' 
+                  : 'text-gray-400 hover:text-yellow-500'
+              } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              aria-label={isFavorite ? "Remover de favoritos" : "Agregar a favoritos"}
               tabIndex={0}
-              onKeyPress={(e) => handleKeyPress(e, () => onFavorite(user.uid))}
+              onKeyPress={(e) => handleKeyPress(e, () => handleFavoriteClick(e as any))}
             >
-              <Star className="w-5 h-5" fill="currentColor" />
+              <Star className="w-5 h-5" fill={isFavorite ? "currentColor" : "none"} />
             </button>
             <button
-              onClick={() => onBlock(user.uid)}
-              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+              onClick={handleBlockClick}
+              disabled={isProcessing}
+              className={`p-1 text-gray-400 hover:text-red-500 transition-colors ${
+                isProcessing ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
               aria-label="Bloquear usuario"
               tabIndex={0}
-              onKeyPress={(e) => handleKeyPress(e, () => onBlock(user.uid))}
+              onKeyPress={(e) => handleKeyPress(e, () => handleBlockClick(e as any))}
             >
               <Ban className="w-5 h-5" />
             </button>
@@ -80,11 +154,17 @@ const UserCard = ({ user, distance, onFavorite, onBlock, onChat, onViewProfile }
         </div>
 
         <button
-          onClick={() => onChat(user.uid)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onChat(user.uid);
+          }}
           className="mt-4 w-full py-2 px-4 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
           aria-label="Iniciar chat"
           tabIndex={0}
-          onKeyPress={(e) => handleKeyPress(e, () => onChat(user.uid))}
+          onKeyPress={(e) => {
+            e.stopPropagation();
+            handleKeyPress(e, () => onChat(user.uid));
+          }}
         >
           <MessageCircle className="inline-block mr-2" />
           Chatear

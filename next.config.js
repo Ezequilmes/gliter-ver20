@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración para Firebase Hosting
-  output: 'export',
+  // Configuración para Firebase App Hosting
+  // Removido output: 'export' para permitir SSR
   trailingSlash: true,
-  distDir: 'out',
   
-  // Optimización de imágenes para Firebase Hosting
+ // Optimización de imágenes para Firebase Hosting
   images: {
     unoptimized: true,
     domains: [

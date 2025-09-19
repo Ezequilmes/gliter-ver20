@@ -139,7 +139,7 @@ const FavoritesPage = () => {
   };
 
   const handleChat = (userId: string) => {
-    router.push(`/chat/chat_${userId}`);
+    router.push(`/chat/${userId}`);
   };
 
   const handleViewProfile = (userId: string) => {

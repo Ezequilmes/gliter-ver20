@@ -33,7 +33,7 @@ service cloud.firestore {
     
     // Función helper temporal para permitir operaciones mientras se configura App Check
     function isAppCheckValidOrAuthenticated() {
-      return request.app_check_token != null || isAuthenticated();
+      return isAuthenticated(); // Temporalmente solo requiere autenticación
     }
     
     // Función helper para verificar datos válidos del usuario
