@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:apphosting": "cp next.config.apphosting.js next.config.js && next build",
     "start": "next start -p 8080",
     "lint": "next lint",
     "deploy:check": "firebase --version && node --version && npm --version",

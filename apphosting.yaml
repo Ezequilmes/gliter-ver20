@@ -5,7 +5,7 @@
 build:
   commands:
     - npm ci
-    - npm run build
+    - npm run build:apphosting
 
 # Configuración de runtime
 runtime:
