@@ -283,6 +283,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               message={message}
               isOwn={message.senderId === currentUser.uid}
               senderName={message.senderId === currentUser.uid ? currentUser.nombre : otherUser.nombre}
+              senderPhoto={message.senderId === currentUser.uid ? currentUser.fotoPerfil : otherUser.fotoPerfil}
             />
           ))
         )}

@@ -20,11 +20,15 @@ const ProfileModal = ({ user, onClose, onChat, onFavorite, onBlock }: ProfileMod
   const allImages = [user.fotoPerfil, ...user.fotosAdicionales].filter(Boolean);
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    if (allImages.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    }
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    if (allImages.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    }
   };
 
   const handleImageError = (index: number) => {
@@ -63,7 +67,7 @@ const ProfileModal = ({ user, onClose, onChat, onFavorite, onBlock }: ProfileMod
         {/* Carrusel de imágenes */}
         <div className="relative">
           <div className="aspect-square relative overflow-hidden">
-            {!imageError[currentImageIndex] ? (
+            {allImages.length > 0 && allImages[currentImageIndex] && !imageError[currentImageIndex] ? (
               <Image
                 src={allImages[currentImageIndex]}
                 alt={`Foto ${currentImageIndex + 1} de ${user.nombre}`}

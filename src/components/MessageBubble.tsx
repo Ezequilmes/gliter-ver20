@@ -10,9 +10,10 @@ interface MessageBubbleProps {
   message: Message;
   isOwn: boolean;
   senderName: string;
+  senderPhoto: string;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn, senderName }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn, senderName, senderPhoto }) => {
   const formatTime = (date: Date) => {
     try {
       return formatDistanceToNow(date, {
@@ -28,6 +29,32 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn, senderNam
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}>
+      {/* Avatar del usuario (solo para mensajes de otros) */}
+      {!isOwn && (
+        <div className="flex-shrink-0 mr-3">
+          <div className="w-8 h-8 rounded-full overflow-hidden">
+            <Image
+              src={senderPhoto}
+              alt={senderName}
+              width={32}
+              height={32}
+              className="object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `data:image/svg+xml;base64,${btoa(
+                  `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                    <rect width="32" height="32" fill="#a855f7"/>
+                    <text x="16" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">
+                      ${senderName.charAt(0).toUpperCase()}
+                    </text>
+                  </svg>`
+                )}`;
+              }}
+            />
+          </div>
+        </div>
+      )}
+      
       <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
         {/* Nombre del remitente (solo para mensajes de otros) */}
         {!isOwn && (
