@@ -30,76 +30,13 @@ const FavoritesPage = () => {
     return unsubscribe;
   }, [router]);
 
-  // Mock data para demo
+  // Load real favorites data from Firebase
   useEffect(() => {
     if (user) {
-      const mockFavorites: User[] = [
-        {
-          uid: 'fav1',
-          nombre: 'Isabella Martinez',
-          edad: 24,
-          genero: 'Mujer',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versatil',
-          fotoPerfil: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face',
-          fotosAdicionales: [
-            'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&h=300&fit=crop',
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&h=300&fit=crop'
-          ],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(),
-          email: 'isabella@example.com'
-        },
-        {
-          uid: 'fav2',
-          nombre: 'Diego Fernandez',
-          edad: 27,
-          genero: 'Hombre',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'activo',
-          fotoPerfil: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face',
-          fotosAdicionales: [
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop'
-          ],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - 600000), // 10 min ago
-          email: 'diego@example.com'
-        },
-        {
-          uid: 'fav3',
-          nombre: 'Valentina Lopez',
-          edad: 22,
-          genero: 'Mujer',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'pasivo',
-          fotoPerfil: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face',
-          fotosAdicionales: [
-            'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=300&h=300&fit=crop'
-          ],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - 3600000), // 1 hour ago
-          email: 'valentina@example.com'
-        },
-        {
-          uid: 'fav4',
-          nombre: 'Mateo Silva',
-          edad: 26,
-          genero: 'Hombre',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versatil',
-          fotoPerfil: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - 7200000), // 2 hours ago
-          email: 'mateo@example.com'
-        }
-      ];
-      
-      setFavorites(mockFavorites);
+      // TODO: Implement real favorites data loading from Firestore
+      // Load user's favorite profiles from their favorites list
+      // For now, initialize empty array
+      setFavorites([]);
     }
   }, [user]);
 

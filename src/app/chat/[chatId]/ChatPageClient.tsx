@@ -28,114 +28,45 @@ const ChatPageClient = () => {
     return unsubscribe;
   }, [router]);
 
-  // Mock data para demo
+  // Load real user data from Firebase
   useEffect(() => {
     if (user && chatId) {
-      // Mock current user
-      const mockCurrentUser: User = {
+      // TODO: Implement real user data loading from Firestore
+      // For now, set basic user info from Firebase Auth
+      const currentUserData: User = {
         uid: user.uid,
-        nombre: 'Tu Usuario',
-        edad: 25,
-        genero: 'Hombre',
-        ubicacion: { lat: -34.6037, lng: -58.3816 },
-        rolSexual: 'versatil',
-        fotoPerfil: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        nombre: user.displayName || 'Usuario',
+        edad: 25, // This should come from Firestore user profile
+        genero: 'No especificado', // This should come from Firestore user profile
+        ubicacion: { lat: 0, lng: 0 }, // This should come from Firestore user profile
+        rolSexual: null, // This should come from Firestore user profile
+        fotoPerfil: user.photoURL || '',
         fotosAdicionales: [],
         favoritos: [],
         bloqueados: [],
         lastOnline: new Date(),
-        email: user.email || 'tu@example.com'
+        email: user.email || ''
       };
 
-      // Mock other users based on chatId
-      const mockUsers: { [key: string]: User } = {
-        'chat1': {
-          uid: 'user1',
-          nombre: 'Ana García',
-          edad: 25,
-          genero: 'Mujer',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versatil',
-          fotoPerfil: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(),
-          email: 'ana@example.com'
-        },
-        'chat2': {
-          uid: 'user2',
-          nombre: 'Carlos Mendez',
-          edad: 28,
-          genero: 'Hombre',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'activo',
-          fotoPerfil: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - 300000),
-          email: 'carlos@example.com'
-        },
-        'chat3': {
-          uid: 'user3',
-          nombre: 'Sofia Rodriguez',
-          edad: 23,
-          genero: 'Mujer',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'pasivo',
-          fotoPerfil: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - 3600000),
-          email: 'sofia@example.com'
-        }
-      };
-
-      // Generate mock user for any chatId
-      const generateMockUser = (userId: string): User => {
-        const names = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Morgan', 'Riley', 'Avery', 'Quinn'];
-        const randomName = names[userId.charCodeAt(0) % names.length];
-        const randomAge = 20 + (userId.charCodeAt(1) % 15);
-        const genders = ['Hombre', 'Mujer', 'No binario'];
-        const randomGender = genders[userId.charCodeAt(2) % genders.length];
-        const roles: (User['rolSexual'])[] = ['activo', 'pasivo', 'versatil'];
-        const randomRole = roles[userId.charCodeAt(3) % roles.length];
-        
-        return {
-          uid: userId,
-          nombre: randomName,
-          edad: randomAge,
-          genero: randomGender,
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: randomRole,
-          fotoPerfil: `https://images.unsplash.com/photo-${1400000000000 + (userId.charCodeAt(0) * 1000000)}?w=150&h=150&fit=crop&crop=face`,
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - (userId.charCodeAt(4) % 3600000)),
-          email: `${randomName.toLowerCase()}@example.com`
-        };
-      };
-
-      const defaultUser: User = {
-        uid: 'unknown-user',
-        nombre: 'Usuario Desconocido',
+      setCurrentUser(currentUserData);
+      
+      // TODO: Load other user data from Firestore based on chatId
+      // For now, create a temporary other user to prevent chat loading errors
+      const tempOtherUser: User = {
+        uid: 'temp-user-' + chatId,
+        nombre: 'Usuario Chat',
         edad: 25,
         genero: 'No especificado',
-        ubicacion: { lat: -34.6037, lng: -58.3816 },
+        ubicacion: { lat: 0, lng: 0 },
         rolSexual: null,
-        fotoPerfil: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+        fotoPerfil: '',
         fotosAdicionales: [],
         favoritos: [],
         bloqueados: [],
         lastOnline: new Date(),
-        email: 'unknown@example.com'
+        email: 'temp@example.com'
       };
-
-      setCurrentUser(mockCurrentUser);
-      setOtherUser(mockUsers[chatId] || generateMockUser(chatId));
+      setOtherUser(tempOtherUser);
     }
   }, [user, chatId]);
 
@@ -213,35 +144,11 @@ const ChatPageClient = () => {
               Mensajes
             </h2>
             
-            {/* Lista simplificada de chats */}
+            {/* TODO: Implement real chat list from Firestore */}
             <div className="space-y-2">
-              {['chat1', 'chat2', 'chat3'].map((id) => {
-                const isActive = id === chatId;
-                const names = {
-                  'chat1': 'Ana García',
-                  'chat2': 'Carlos Mendez',
-                  'chat3': 'Sofia Rodriguez'
-                } as const;
-                
-                return (
-                  <button
-                    key={id}
-                    onClick={() => router.push(`/chat/${id}`)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors ${
-                      isActive 
-                        ? 'bg-primary-50 border border-primary-200' 
-                        : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="font-medium text-gray-900">
-                      {names[id as keyof typeof names]}
-                    </div>
-                    <div className="text-sm text-gray-500 truncate">
-                      Ultimo mensaje...
-                    </div>
-                  </button>
-                );
-              })}
+              <p className="text-gray-500 text-center py-4">
+                No hay chats disponibles
+              </p>
             </div>
           </div>
         </div>

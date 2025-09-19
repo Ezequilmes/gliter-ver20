@@ -29,77 +29,14 @@ const ChatListPage = () => {
     return unsubscribe;
   }, [router]);
 
-  // Mock data para demo
+  // Load real chat data from Firebase
   useEffect(() => {
     if (user) {
-      const mockUsers: { [key: string]: User } = {
-        'user1': {
-          uid: 'user1',
-          nombre: 'Ana García',
-          edad: 25,
-          genero: 'Mujer',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versatil',
-          fotoPerfil: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(),
-          email: 'ana@example.com'
-        },
-        'user2': {
-          uid: 'user2',
-          nombre: 'Carlos Mendez',
-          edad: 28,
-          genero: 'Hombre',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'activo',
-          fotoPerfil: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - 300000), // 5 min ago
-          email: 'carlos@example.com'
-        },
-        'user3': {
-          uid: 'user3',
-          nombre: 'Sofia Rodriguez',
-          edad: 23,
-          genero: 'Mujer',
-          ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'pasivo',
-          fotoPerfil: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-          fotosAdicionales: [],
-          favoritos: [],
-          bloqueados: [],
-          lastOnline: new Date(Date.now() - 3600000), // 1 hour ago
-          email: 'sofia@example.com'
-        }
-      };
-
-      const mockChats: Chat[] = [
-        {
-          id: 'chat1',
-          participants: [user.uid, 'user1'],
-          lastMessage: '¡Hola! ¿Como estas? 😊',
-          lastTimestamp: new Date(Date.now() - 300000) // 5 min ago
-        },
-        {
-          id: 'chat2',
-          participants: [user.uid, 'user2'],
-          lastMessage: 'Me encantaría conocerte mejor',
-          lastTimestamp: new Date(Date.now() - 1800000) // 30 min ago
-        },
-        {
-          id: 'chat3',
-          participants: [user.uid, 'user3'],
-          lastMessage: 'Gracias por el match! 💕',
-          lastTimestamp: new Date(Date.now() - 7200000) // 2 hours ago
-        }
-      ];
-
-      setUsers(mockUsers);
-      setChats(mockChats);
+      // TODO: Implement real chat data loading from Firestore
+      // Load user's chats and associated user profiles
+      // For now, initialize empty arrays
+      setUsers({});
+      setChats([]);
     }
   }, [user]);
 
@@ -278,12 +215,7 @@ const ChatListPage = () => {
                           {chat.lastMessage}
                         </p>
                         
-                        {/* Badge de mensajes no leídos (mock) */}
-                        {Math.random() > 0.7 && (
-                          <span className="bg-accent-500 text-white text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                            {Math.floor(Math.random() * 5) + 1}
-                          </span>
-                        )}
+                        {/* TODO: Implement real unread message count from Firestore */}
                       </div>
                       
                       {/* Rol sexual badge */}
