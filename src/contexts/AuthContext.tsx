@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { refreshUserData } from '@/utils/refreshUserData';
 import { User } from '@/types';
 import { User as FirebaseUser } from 'firebase/auth';
 
@@ -11,6 +12,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +29,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsClient(true);
   }, []);
   
+  const refreshUser = async () => {
+    if (authState.firebaseUser) {
+      try {
+        await refreshUserData(authState.firebaseUser);
+        // El hook useAuth se actualizará automáticamente a través de onAuthStateChanged
+      } catch (error) {
+        console.error('Error al refrescar usuario desde contexto:', error);
+      }
+    }
+  };
+  
   // Durante la hidratación, mostrar estado de loading
   if (!isClient) {
     const loadingValue: AuthContextType = {
@@ -34,7 +47,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       firebaseUser: null,
       loading: true,
       error: null,
-      isAuthenticated: false
+      isAuthenticated: false,
+      refreshUser: async () => {}
     };
     
     return (
@@ -46,7 +60,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   
   const value: AuthContextType = {
     ...authState,
-    isAuthenticated: !!authState.user
+    isAuthenticated: !!authState.user,
+    refreshUser
   };
 
   return (

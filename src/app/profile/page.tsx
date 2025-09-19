@@ -3,11 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { doc, updateDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
+import { ProfilePhotoUploader } from '@/components/PhotoUploader';
+import { refreshUserData } from '@/utils/refreshUserData';
 import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Camera, MapPin, Calendar, User as UserIcon, Save } from 'lucide-react';
+
+// Importar funciones de prueba para debugging
+if (typeof window !== 'undefined') {
+  import('@/utils/testPhotoUpload').then(module => {
+    console.log('🔧 Funciones de prueba de fotos cargadas. Usa window.testPhotoUpload en la consola.');
+  });
+}
 
 
 interface ProfileFormData {
@@ -24,7 +32,7 @@ interface ProfileFormData {
 }
 
 export default function ProfilePage() {
-  const { user, firebaseUser } = useAuthContext();
+  const { user, firebaseUser, refreshUser } = useAuthContext();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -52,96 +60,18 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      console.error('No file selected');
-      alert('Por favor selecciona una imagen');
-      return;
-    }
-
-    if (!firebaseUser || !firebaseUser.uid) {
-      console.error('User not authenticated or UID not available');
-      alert('Error: Usuario no autenticado. Por favor inicia sesión nuevamente.');
-      return;
-    }
-
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona solo archivos de imagen');
-      return;
-    }
-
-    // Validar tamaño (5MB máximo)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('La imagen debe ser menor a 5MB');
-      return;
-    }
-
-    setUploading(true);
+  const handlePhotoUploadSuccess = async (url: string) => {
+    // Refrescar datos del usuario sin recargar la página
     try {
-      console.log('Uploading image for user:', firebaseUser.uid);
-      
-      // Verificar token de autenticación
-      const token = await firebaseUser.getIdToken(true); // Forzar refresh del token
-      console.log('Auth token refreshed, length:', token.length);
-      
-      // Usar ruta específica para imágenes de perfil
-      const imageRef = ref(storage, `users/${firebaseUser.uid}/profile/avatar.jpg`);
-      
-      const metadata = {
-        contentType: file.type,
-        customMetadata: {
-          uploadedBy: firebaseUser.uid,
-          uploadedAt: new Date().toISOString(),
-          originalName: file.name,
-          purpose: 'profile-avatar'
-        }
-      };
-      
-      console.log('Uploading to path:', `users/${firebaseUser.uid}/profile/avatar.jpg`);
-      const uploadResult = await uploadBytes(imageRef, file, metadata);
-      console.log('Upload completed:', uploadResult.metadata.fullPath);
-      
-      const downloadURL = await getDownloadURL(imageRef);
-      console.log('Download URL obtained:', downloadURL);
-      
-      // Actualizar documento de usuario
-      await updateDoc(doc(db, 'users', firebaseUser.uid), {
-        photoURL: downloadURL,
-        fotoPerfil: downloadURL,
-        updatedAt: new Date()
-      });
-      
-      // Actualizar perfil público
-      await setDoc(doc(db, 'publicProfiles', firebaseUser.uid), {
-        photoURL: downloadURL,
-        updatedAt: new Date()
-      }, { merge: true });
-      
-      alert('Imagen subida correctamente');
-      
-      // Recargar página para mostrar la nueva imagen
-      window.location.reload();
-      
+      await refreshUser();
+      console.log('Foto de perfil actualizada exitosamente');
     } catch (error) {
-      console.error('Error uploading image:', error);
-      
-      const firebaseError = error as any;
-      if (firebaseError.code === 'storage/unauthorized') {
-        alert('Error: No tienes permisos para subir imágenes. Verifica que estés autenticado correctamente.');
-      } else if (firebaseError.code === 'storage/unauthenticated') {
-        alert('Error: Sesión expirada. Por favor inicia sesión nuevamente.');
-      } else if (firebaseError.code === 'storage/quota-exceeded') {
-        alert('Error: Cuota de almacenamiento excedida.');
-      } else if (firebaseError.code === 'storage/invalid-format') {
-        alert('Error: Formato de imagen no válido.');
-      } else {
-        alert(`Error al subir la imagen: ${firebaseError.message || 'Error desconocido'}`);
-      }
-    } finally {
-      setUploading(false);
+      console.error('Error al refrescar datos después de subir foto:', error);
     }
+  };
+
+  const handlePhotoUploadError = (error: string) => {
+    console.error('Error uploading photo:', error);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,10 +116,9 @@ export default function ProfilePage() {
       // Actualizar perfil público
       await setDoc(doc(db, 'publicProfiles', firebaseUser.uid), publicProfileData, { merge: true });
       
+      // Refrescar datos del usuario sin recargar la página
+      await refreshUser();
       alert('Perfil actualizado correctamente');
-      
-      // Forzar recarga de la página para actualizar el contexto
-      window.location.reload();
       
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -198,10 +127,12 @@ export default function ProfilePage() {
       if (firestoreError.code === 'not-found') {
         console.log('Documento no encontrado, creando nuevo...');
         try {
-          await setDoc(doc(db, 'users', firebaseUser.uid), updatedUserData);
-          await setDoc(doc(db, 'publicProfiles', firebaseUser.uid), publicProfileData);
+          await setDoc(doc(db, 'users', firebaseUser.uid), updatedUserData, { merge: true });
+          await setDoc(doc(db, 'publicProfiles', firebaseUser.uid), publicProfileData, { merge: true });
+          
+          // Refrescar datos del usuario
+          await refreshUser();
           alert('Perfil creado correctamente');
-          window.location.reload();
         } catch (createError) {
           console.error('Error creating profile:', createError);
           alert('Error al crear el perfil');
@@ -271,18 +202,14 @@ export default function ProfilePage() {
                   height={128}
                   className="rounded-full object-cover border-4 border-gray-200"
                 />
-                <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600">
-                  <Camera size={20} />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
-                </label>
+                <div className="absolute bottom-0 right-0">
+                   <ProfilePhotoUploader
+                     onUploadSuccess={handlePhotoUploadSuccess}
+                     onUploadError={handlePhotoUploadError}
+                     className="bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600"
+                   />
+                 </div>
               </div>
-              {uploading && <p className="text-sm text-gray-500 mt-2">Subiendo imagen...</p>}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">

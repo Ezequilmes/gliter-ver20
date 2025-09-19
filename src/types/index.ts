@@ -10,6 +10,7 @@ export interface User {
   rolSexual?: 'pasivo' | 'activo' | 'versatil' | null;
   fotoPerfil: string;
   fotosAdicionales: string[];
+  photos?: any[]; // Para las fotos de galería
   favoritos: string[];
   bloqueados: string[];
   lastOnline: Date;

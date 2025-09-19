@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"lib\\\\firebase.ts -> firebase/firestore":{"id":5978,"files":[]}}';
+self.__REACT_LOADABLE_MANIFEST='{"app\\\\profile\\\\page.tsx -> @/utils/testPhotoUpload":{"id":8673,"files":["static/chunks/673.5a1887a384dfcf7b.js"]},"lib\\\\firebase.ts -> firebase/firestore":{"id":5978,"files":[]}}';
