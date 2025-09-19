@@ -2,7 +2,7 @@
 const nextConfig = {
   // Configuración para Firebase App Hosting (SSR/SSG)
   // NO usar 'export' - App Hosting necesita servidor Next.js
-  output: 'standalone',
+  // output: 'standalone', // Comentado temporalmente para evitar errores de build
   trailingSlash: false,
   skipTrailingSlashRedirect: false,
   
