@@ -1,31 +1,36 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración para Firebase App Hosting
-  // Removido output: 'export' para permitir SSR
-  trailingSlash: true,
+  webpack: (config) => {
+    config.resolve.alias['@'] = path.join(__dirname, 'src');
+    return config;
+  },
+  // Configuración para Firebase App Hosting (SSR/SSG)
+  // NO usar 'export' - App Hosting necesita servidor Next.js
+  // output: 'standalone', // Comentado temporalmente para evitar errores de build
+  trailingSlash: false,
+  skipTrailingSlashRedirect: false,
   
- // Optimización de imágenes para Firebase Hosting
+  // ESLint: permitir builds aunque existan errores de lint (temporal)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
+  // Image optimization para App Hosting
   images: {
-    unoptimized: true,
-    domains: [
-      'firebasestorage.googleapis.com',
-      'storage.googleapis.com',
-      'gliter.com.ar',
-      'www.gliter.com.ar'
-    ],
+    domains: ['firebasestorage.googleapis.com', 'images.unsplash.com'],
+    // App Hosting soporta optimización de imágenes
+    unoptimized: false
   },
   
-  // Variables de entorno públicas
+  // Environment variables
   env: {
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    NEXT_PUBLIC_APP_NAME: 'Gliter',
+    NEXT_PUBLIC_APP_VERSION: '1.0.0'
   },
   
-  // Encabezados de seguridad básicos
+  // Security headers para App Hosting
   async headers() {
     return [
       {
@@ -44,50 +49,39 @@ const nextConfig = {
             value: 'origin-when-cross-origin',
           },
           {
-            key: 'Permissions-Policy',
-            value: 'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()'
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
           },
+        ],
+      },
+      // Cache para assets estáticos
+      {
+        source: '/icon.svg',
+        headers: [
           {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://www.recaptcha.net; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com wss://*.firebaseio.com https://www.google.com https://www.gstatic.com https://www.recaptcha.net https://firebaseinstallations.googleapis.com https://firebaseremoteconfig.googleapis.com https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/; frame-src 'self' https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; object-src 'none'; base-uri 'self';"
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
     ];
   },
   
-  // Redirects básicos
+  // Redirects para App Hosting
   async redirects() {
     return [
       {
-        source: '/home',
-        destination: '/',
+        source: '/auth.html',
+        destination: '/auth',
         permanent: true,
       },
     ];
   },
   
-  // Configuración experimental para App Hosting
+  // Experimental features para App Hosting
   experimental: {
+    // Optimizaciones para App Hosting
     serverComponentsExternalPackages: ['firebase-admin'],
-  },
-
-  // Configuración webpack para resolver problemas de hidratación
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    return config;
-  },
-  
-  // ESLint
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 };
 

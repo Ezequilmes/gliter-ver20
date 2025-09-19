@@ -8,7 +8,7 @@
   "/page": "app/page.js",
   "/profile/page": "app/profile/page.js",
   "/robots.txt/route": "app/robots.txt/route.js",
+  "/settings/page": "app/settings/page.js",
   "/sitemap.xml/route": "app/sitemap.xml/route.js",
-  "/chat/[chatId]/page": "app/chat/[chatId]/page.js",
-  "/settings/page": "app/settings/page.js"
+  "/chat/[chatId]/page": "app/chat/[chatId]/page.js"
 }

@@ -1,5 +1,11 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config) => {
+    config.resolve.alias['@'] = path.join(__dirname, 'src');
+    return config;
+  },
   // Configuración para Firebase App Hosting (SSR/SSG)
   // NO usar 'export' - App Hosting necesita servidor Next.js
   // output: 'standalone', // Comentado temporalmente para evitar errores de build
