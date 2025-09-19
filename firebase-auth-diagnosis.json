@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-09-18T19:32:28.489Z",
+  "issues": {
+    "common_auth_problems": [
+      "App Check bloqueando solicitudes de autenticación",
+      "Dominios no autorizados en reCAPTCHA Console",
+      "Identity Platform no habilitado en Firebase",
+      "Proveedores de autenticación no configurados",
+      "Reglas de Firestore muy restrictivas",
+      "Variables de entorno incorrectas o faltantes"
+    ],
+    "debugging_steps": [
+      "1. Verificar Firebase Console > Authentication > Sign-in method",
+      "2. Revisar Firebase Console > App Check > Apps",
+      "3. Confirmar dominios en reCAPTCHA Console",
+      "4. Verificar reglas de Firestore",
+      "5. Revisar logs del navegador (F12 > Console)",
+      "6. Verificar Network tab para errores de API"
+    ],
+    "console_urls": {
+      "firebase_auth": "https://console.firebase.google.com/project/soygay-b9bc5/authentication",
+      "firebase_appcheck": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+      "recaptcha_console": "https://www.google.com/recaptcha/admin/site/6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+      "firestore_rules": "https://console.firebase.google.com/project/soygay-b9bc5/firestore/rules"
+    }
+  }
+}

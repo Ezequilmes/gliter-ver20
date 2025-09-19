@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-09-18T02:39:13.802Z",
+  "reportType": "APP_CHECK_DEBUG_TOKEN_SETUP",
+  "debugToken": {
+    "generated": true,
+    "token": "debug_mfosy3r6_a45b0...",
+    "addedToEnv": true
+  },
+  "configuration": {
+    "envLocalUpdated": true,
+    "appCheckEnabled": true,
+    "firebaseConfigOk": true
+  },
+  "nextSteps": [
+    "Abrir Firebase Console",
+    "Agregar debug token en App Check",
+    "Verificar configuración de reCAPTCHA",
+    "Redesplegar aplicación",
+    "Probar en navegador"
+  ],
+  "firebaseConsoleUrl": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+  "status": "READY_FOR_FIREBASE_CONSOLE"
+}

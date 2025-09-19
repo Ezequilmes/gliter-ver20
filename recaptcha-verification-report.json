@@ -1,0 +1,31 @@
+{
+  "timestamp": "2025-09-18T01:53:46.493Z",
+  "providedKeys": {
+    "siteKey": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "secretKey": "6LdnbrorAAAAADzPaNdiAFtTfzHvDWI--Wp7T0Ph"
+  },
+  "currentConfig": {
+    "firstKey": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "secondKey": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw"
+  },
+  "analysis": {
+    "providedMatchesFirst": true,
+    "providedMatchesSecond": false,
+    "duplicateConfig": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+    "hasConflict": true
+  },
+  "validations": {
+    "siteKeyFormat": true,
+    "secretKeyFormat": true,
+    "keysMatch": true
+  },
+  "isProductionKey": true,
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "action": "Limpiar configuración duplicada",
+      "description": "Eliminar una de las configuraciones de reCAPTCHA en .env.production"
+    }
+  ],
+  "status": "OK"
+}

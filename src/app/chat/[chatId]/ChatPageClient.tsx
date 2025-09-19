@@ -38,7 +38,7 @@ const ChatPageClient = () => {
         edad: 25,
         genero: 'Hombre',
         ubicacion: { lat: -34.6037, lng: -58.3816 },
-        rolSexual: 'versátil',
+        rolSexual: 'versatil',
         fotoPerfil: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
         fotosAdicionales: [],
         favoritos: [],
@@ -55,7 +55,7 @@ const ChatPageClient = () => {
           edad: 25,
           genero: 'Mujer',
           ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versátil',
+          rolSexual: 'versatil',
           fotoPerfil: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
           fotosAdicionales: [],
           favoritos: [],
@@ -113,8 +113,8 @@ const ChatPageClient = () => {
   }, [user, chatId]);
 
   const handleSendMessage = (message: string, type: 'texto' | 'foto', file?: File) => {
-    console.log('Enviando mensaje:', { message, type, file });
-    // Implementación real con Firebase va aquí
+    console.log('Mensaje enviado:', { message, type, file });
+    // La implementación real está en ChatWindow
   };
 
   const handleBackToChats = () => {
@@ -137,7 +137,7 @@ const ChatPageClient = () => {
             Chat no encontrado
           </h2>
           <p className="text-gray-600 mb-4">
-            No se pudo cargar la conversación
+            No se pudo cargar la conversacion
           </p>
           <button
             onClick={() => router.push('/chat')}
@@ -210,7 +210,7 @@ const ChatPageClient = () => {
                       {names[id as keyof typeof names]}
                     </div>
                     <div className="text-sm text-gray-500 truncate">
-                      Último mensaje...
+                      Ultimo mensaje...
                     </div>
                   </button>
                 );

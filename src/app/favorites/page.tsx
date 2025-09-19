@@ -40,7 +40,7 @@ const FavoritesPage = () => {
           edad: 24,
           genero: 'Mujer',
           ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versátil',
+          rolSexual: 'versatil',
           fotoPerfil: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face',
           fotosAdicionales: [
             'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&h=300&fit=crop',
@@ -89,7 +89,7 @@ const FavoritesPage = () => {
           edad: 26,
           genero: 'Hombre',
           ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versátil',
+          rolSexual: 'versatil',
           fotoPerfil: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face',
           fotosAdicionales: [],
           favoritos: [],

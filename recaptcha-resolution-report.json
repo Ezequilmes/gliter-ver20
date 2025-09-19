@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-09-18T19:21:01.308Z",
+  "action": "maintain_current",
+  "selectedSiteKey": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+  "updatedFile": ".env.production",
+  "previousConfiguration": {
+    "envLocal": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+    "envProduction": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-"
+  },
+  "newConfiguration": {
+    "envLocal": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+    "envProduction": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw"
+  },
+  "consoleUrl": "https://www.google.com/recaptcha/admin/site/6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+  "nextSteps": [
+    "Verificar dominios autorizados en reCAPTCHA Console",
+    "Probar la aplicación para confirmar que funciona",
+    "Monitorear métricas de App Check",
+    "Eliminar configuraciones de reCAPTCHA no utilizadas"
+  ]
+}

@@ -37,7 +37,7 @@ const ProfileModal = ({ user, onClose, onChat, onFavorite, onBlock }: ProfileMod
         return 'bg-blue-100 text-blue-800';
       case 'pasivo':
         return 'bg-pink-100 text-pink-800';
-      case 'versátil':
+      case 'versatil':
         return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';

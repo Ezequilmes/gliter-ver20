@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-09-18T02:18:31.277Z",
+  "project": "soygay-b9bc5",
+  "app": "1:982386751624:web:20a3ee764ec4c6f0da073d",
+  "issues": [
+    {
+      "type": "App Check 400 Error",
+      "description": "exchangeDebugToken falla con error 400",
+      "cause": "Token de debug no configurado o inválido",
+      "solution": "Generar nuevo token de debug en Firebase Console"
+    },
+    {
+      "type": "reCAPTCHA Configuration",
+      "description": "reCAPTCHA site key no configurado",
+      "cause": "NEXT_PUBLIC_RECAPTCHA_SITE_KEY faltante",
+      "solution": "Configurar reCAPTCHA en Google Cloud Console"
+    },
+    {
+      "type": "Authentication 401 Error",
+      "description": "signInWithPassword falla con error 401",
+      "cause": "App Check token inválido o faltante",
+      "solution": "Corregir configuración de App Check"
+    }
+  ],
+  "recommendations": [
+    "Configurar reCAPTCHA v3 en Google Cloud Console",
+    "Generar token de debug para desarrollo",
+    "Actualizar variables de entorno",
+    "Redesplegar la aplicación",
+    "Verificar funcionamiento en producción"
+  ],
+  "status": "NEEDS_CONFIGURATION"
+}

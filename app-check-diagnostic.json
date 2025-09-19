@@ -1,0 +1,56 @@
+{
+  "timestamp": "2025-09-18T02:19:27.301Z",
+  "environment": "production",
+  "configuration": {
+    "projectId": "soygay-b9bc5",
+    "appId": "1:982386751624:web:20a3ee764ec4c6f0da073d",
+    "apiKey": "Configurado",
+    "recaptchaSiteKey": "Configurado",
+    "debugToken": "NO CONFIGURADO"
+  },
+  "issues": [
+    {
+      "type": "App Check 400 Error",
+      "status": "ACTIVE",
+      "description": "exchangeDebugToken retorna error 400",
+      "possibleCauses": [
+        "Token de debug inválido o expirado",
+        "App Check no configurado correctamente en Firebase Console",
+        "reCAPTCHA no configurado para el dominio"
+      ],
+      "solutions": [
+        "Regenerar token de debug en Firebase Console",
+        "Verificar configuración de reCAPTCHA",
+        "Verificar que el dominio esté autorizado"
+      ]
+    },
+    {
+      "type": "Authentication 401 Error",
+      "status": "ACTIVE",
+      "description": "signInWithPassword retorna error 401",
+      "possibleCauses": [
+        "App Check token inválido",
+        "Credenciales incorrectas",
+        "Usuario no existe"
+      ],
+      "solutions": [
+        "Corregir configuración de App Check",
+        "Verificar credenciales de usuario",
+        "Crear usuario de prueba"
+      ]
+    }
+  ],
+  "recommendations": [
+    "Verificar configuración de App Check en Firebase Console",
+    "Regenerar token de debug si es necesario",
+    "Probar autenticación con usuario válido",
+    "Verificar logs del navegador para más detalles"
+  ],
+  "nextSteps": [
+    "Ejecutar script de prueba en el navegador",
+    "Verificar configuración en Firebase Console",
+    "Regenerar tokens si es necesario",
+    "Redesplegar aplicación"
+  ],
+  "status": "NEEDS_DEBUG_TOKEN"
+}

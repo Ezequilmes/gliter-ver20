@@ -1,0 +1,87 @@
+{
+  "title": "Configuración de App Check para Producción",
+  "timestamp": "2025-09-18T20:34:17.940Z",
+  "project": "soygay-b9bc5",
+  "steps": [
+    {
+      "step": 1,
+      "title": "Acceder a Firebase Console",
+      "action": "Abrir Firebase Console",
+      "url": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+      "description": "Ve directamente a la sección de App Check"
+    },
+    {
+      "step": 2,
+      "title": "Configurar reCAPTCHA v3",
+      "action": "Configurar provider de reCAPTCHA",
+      "details": [
+        "Hacer clic en \"Get started\" si es la primera vez",
+        "Seleccionar \"reCAPTCHA v3\" como provider",
+        "Usar site key existente: 6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+        "Configurar secret key correspondiente"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Configurar servicios como UNENFORCED",
+      "action": "Habilitar App Check para servicios",
+      "services": [
+        {
+          "name": "Firebase Authentication",
+          "mode": "UNENFORCED",
+          "reason": "Permitir autenticación sin bloqueos"
+        },
+        {
+          "name": "Cloud Firestore",
+          "mode": "UNENFORCED",
+          "reason": "Permitir acceso a base de datos"
+        },
+        {
+          "name": "Realtime Database",
+          "mode": "UNENFORCED",
+          "reason": "Permitir acceso a base de datos en tiempo real"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Actualizar configuración de la aplicación",
+      "action": "Modificar variables de entorno",
+      "changes": [
+        "Cambiar NEXT_PUBLIC_DISABLE_APP_CHECK=false",
+        "Mantener NEXT_PUBLIC_RECAPTCHA_SITE_KEY configurado",
+        "Eliminar NEXT_PUBLIC_APPCHECK_DEBUG_TOKEN para producción"
+      ]
+    },
+    {
+      "step": 5,
+      "title": "Verificar configuración",
+      "action": "Probar la aplicación",
+      "tests": [
+        "Ejecutar: node scripts/test-after-enforcement.js",
+        "Probar registro de usuario en la aplicación",
+        "Verificar que no hay errores de App Check",
+        "Confirmar que la autenticación funciona"
+      ]
+    }
+  ],
+  "troubleshooting": [
+    {
+      "problem": "Error: firebase-app-check-token-is-invalid",
+      "solution": "Verificar que App Check esté configurado como UNENFORCED"
+    },
+    {
+      "problem": "reCAPTCHA no funciona",
+      "solution": "Verificar dominios autorizados en Google reCAPTCHA Console"
+    },
+    {
+      "problem": "App Check no se inicializa",
+      "solution": "Verificar que NEXT_PUBLIC_DISABLE_APP_CHECK=false"
+    }
+  ],
+  "urls": {
+    "firebaseConsole": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+    "recaptchaConsole": "https://www.google.com/recaptcha/admin/site/6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "authSettings": "https://console.firebase.google.com/project/soygay-b9bc5/authentication/settings"
+  }
+}

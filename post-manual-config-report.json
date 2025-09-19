@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-09-18T02:31:33.475Z",
+  "testType": "POST_MANUAL_CONFIGURATION",
+  "results": {
+    "permissionsPolicy": {
+      "status": "PARTIAL",
+      "details": "Permissions-Policy presente pero geolocation no restringida"
+    },
+    "configurationFiles": {
+      ".env.local": "EXISTS",
+      ".env.local_recaptcha": "CONFIGURED",
+      ".env.production": "EXISTS",
+      ".env.production_recaptcha": "CONFIGURED",
+      "firebase.json": "EXISTS",
+      "next.config.js": "EXISTS",
+      "next.config.js_permissions": "CONFIGURED"
+    }
+  },
+  "originalErrors": [
+    {
+      "error": "Permissions policy violation: Geolocation",
+      "status": "PENDING",
+      "confidence": "LOW"
+    },
+    {
+      "error": "App Check exchangeDebugToken 400 error",
+      "status": "REQUIRES_BROWSER_TEST",
+      "confidence": "MEDIUM",
+      "note": "Requiere prueba en navegador para confirmar"
+    },
+    {
+      "error": "Authentication signInWithPassword 401 error",
+      "status": "REQUIRES_BROWSER_TEST",
+      "confidence": "MEDIUM",
+      "note": "Debería resolverse si App Check funciona"
+    }
+  ],
+  "recommendations": [
+    "Ejecutar script de prueba en el navegador",
+    "Probar proceso de autenticación completo",
+    "Verificar métricas en Firebase Console",
+    "Monitorear logs por 24 horas"
+  ],
+  "nextSteps": [
+    "Abrir https://soygay-b9bc5.web.app",
+    "Ejecutar test-app-check-manual-config.js en consola",
+    "Probar autenticación en /auth",
+    "Verificar que no hay errores en DevTools"
+  ],
+  "overallStatus": "NEEDS_ATTENTION"
+}

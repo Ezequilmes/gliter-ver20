@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-09-18T19:19:44.200Z",
+  "discrepancyDetected": true,
+  "siteKeys": {
+    "currentConfig": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+    "urlProvided": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-"
+  },
+  "configFiles": [
+    {
+      "file": ".env.local",
+      "key": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw"
+    },
+    {
+      "file": ".env.production",
+      "key": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-"
+    }
+  ],
+  "recommendations": [
+    "Verificar cuál site key es la correcta para producción",
+    "Consolidar en un solo proyecto reCAPTCHA",
+    "Verificar dominios autorizados en Google Console",
+    "Actualizar configuración si es necesario"
+  ],
+  "consoleUrls": {
+    "current": "https://www.google.com/recaptcha/admin/site/6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+    "provided": "https://www.google.com/recaptcha/admin/site/6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-"
+  },
+  "nextSteps": [
+    "Revisar ambos proyectos en Google reCAPTCHA Console",
+    "Determinar cuál usar para producción",
+    "Verificar dominios autorizados",
+    "Actualizar configuración si es necesario"
+  ]
+}

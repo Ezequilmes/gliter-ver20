@@ -1,0 +1,83 @@
+{
+  "timestamp": "2025-09-18T19:51:55.225Z",
+  "project": "soygay-b9bc5",
+  "recaptchaSiteKey": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+  "debugToken": "debug-1758224254887-ijlhpqfuxc",
+  "steps": [
+    {
+      "step": 1,
+      "title": "Configurar reCAPTCHA en Google Cloud Console",
+      "url": "https://console.cloud.google.com/security/recaptcha",
+      "actions": [
+        "Ir a Google Cloud Console > Security > reCAPTCHA",
+        "Verificar que existe una clave con ID: 6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+        "Verificar que los dominios autorizados incluyen:",
+        "  - localhost (para desarrollo)",
+        "  - gliter.com.ar (para producción)",
+        "Si no existe, crear nueva clave reCAPTCHA v3"
+      ]
+    },
+    {
+      "step": 2,
+      "title": "Configurar App Check en Firebase Console",
+      "url": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+      "actions": [
+        "Ir a Firebase Console > Project Settings > App Check",
+        "Verificar que la app web está registrada",
+        "Configurar reCAPTCHA v3 como proveedor",
+        "Usar la clave del sitio: 6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+        "En \"Debug tokens\", agregar este token:",
+        "  debug-1758224254887-ijlhpqfuxc",
+        "En \"Enforcement\", configurar Firebase Auth como \"Unenforced\" temporalmente"
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Verificar configuración local",
+      "actions": [
+        "Verificar que .env.local contiene:",
+        "  NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+        "  NEXT_PUBLIC_APPCHECK_DEBUG_TOKEN=debug-1758224254887-ijlhpqfuxc",
+        "  NEXT_PUBLIC_DISABLE_APP_CHECK=false",
+        "Reiniciar el servidor de desarrollo",
+        "Abrir la consola del navegador para ver logs de App Check"
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Probar la aplicación",
+      "actions": [
+        "Ir a http://localhost:3000/auth",
+        "Intentar registrar un nuevo usuario",
+        "Verificar que no hay errores en la consola",
+        "Si funciona, intentar login con las mismas credenciales"
+      ]
+    }
+  ],
+  "troubleshooting": [
+    {
+      "problem": "Error 400: App Check token is invalid",
+      "solutions": [
+        "Verificar que el debug token está configurado en Firebase Console",
+        "Verificar que el token en .env.local coincide con el de Firebase Console",
+        "Limpiar caché del navegador y reiniciar"
+      ]
+    },
+    {
+      "problem": "reCAPTCHA no se carga",
+      "solutions": [
+        "Verificar que la clave de reCAPTCHA es correcta",
+        "Verificar que localhost está autorizado en Google Cloud Console",
+        "Verificar conexión a internet"
+      ]
+    },
+    {
+      "problem": "Autenticación falla en producción",
+      "solutions": [
+        "Verificar que el dominio de producción está autorizado en reCAPTCHA",
+        "Configurar App Check enforcement como \"Enforced\" en producción",
+        "Verificar que las variables de entorno de producción son correctas"
+      ]
+    }
+  ]
+}

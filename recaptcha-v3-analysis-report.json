@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-09-18T18:55:54.531Z",
+  "currentConfig": {
+    "siteKey": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+    "appCheckDisabled": true
+  },
+  "recommendations": [
+    "Verificar configuración en Google reCAPTCHA Console",
+    "Confirmar dominios autorizados en Firebase Auth",
+    "Generar nuevo debug token si es necesario",
+    "Cambiar NEXT_PUBLIC_DISABLE_APP_CHECK=false",
+    "Ejecutar npm run build",
+    "Desplegar con firebase deploy --only hosting",
+    "Monitorear métricas en Firebase Console"
+  ],
+  "nextSteps": [
+    "Verificar Google reCAPTCHA Console",
+    "Confirmar dominios Firebase Auth",
+    "Reactivar App Check cuando esté listo"
+  ]
+}

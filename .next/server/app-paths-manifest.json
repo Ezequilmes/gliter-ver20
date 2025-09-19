@@ -1,10 +1,12 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/auth/page": "app/auth/page.js",
-  "/page": "app/page.js",
   "/chat/page": "app/chat/page.js",
-  "/robots.txt/route": "app/robots.txt/route.js",
+  "/explore/page": "app/explore/page.js",
   "/favorites/page": "app/favorites/page.js",
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
   "/settings/page": "app/settings/page.js",
   "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/chat/[chatId]/page": "app/chat/[chatId]/page.js"

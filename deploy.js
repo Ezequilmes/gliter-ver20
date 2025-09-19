@@ -138,13 +138,11 @@ function buildProject() {
       log('✅ Production environment configured', 'green');
     }
     
-    // Build Next.js project
+    // Build Next.js project with static export
     log('Building Next.js application...', 'blue');
     execSync('npm run build', { stdio: 'inherit' });
     
-    // Export static files
-    log('Exporting static files...', 'blue');
-    execSync('npx next export', { stdio: 'inherit' });
+    log('✅ Static files exported automatically', 'green');
     
     log('✅ Build completed successfully', 'green');
     return true;

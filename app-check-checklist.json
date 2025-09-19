@@ -1,0 +1,49 @@
+{
+  "title": "Checklist de App Check",
+  "timestamp": "2025-09-18T02:18:31.275Z",
+  "items": [
+    {
+      "category": "Configuración en Google Cloud Console",
+      "tasks": [
+        "Crear clave reCAPTCHA v3 en Google Cloud Console",
+        "Agregar dominio gliter.com.ar a la configuración",
+        "Copiar la clave del sitio (site key)",
+        "Verificar que el tipo sea reCAPTCHA v3"
+      ]
+    },
+    {
+      "category": "Configuración en Firebase Console",
+      "tasks": [
+        "Ir a App Check en Firebase Console",
+        "Seleccionar la app web correcta",
+        "Configurar reCAPTCHA como proveedor",
+        "Pegar la clave del sitio",
+        "Generar token de debug para desarrollo"
+      ]
+    },
+    {
+      "category": "Variables de entorno",
+      "tasks": [
+        "Agregar NEXT_PUBLIC_RECAPTCHA_SITE_KEY a .env.production",
+        "Agregar NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN a .env.local",
+        "Verificar que todas las variables estén configuradas",
+        "Redesplegar la aplicación"
+      ]
+    },
+    {
+      "category": "Verificación",
+      "tasks": [
+        "Verificar que no hay errores 400 en App Check",
+        "Verificar que la autenticación funciona",
+        "Verificar que reCAPTCHA se carga correctamente",
+        "Probar en modo incógnito"
+      ]
+    }
+  ],
+  "nextSteps": [
+    "Configurar reCAPTCHA en Google Cloud Console",
+    "Actualizar variables de entorno",
+    "Redesplegar la aplicación",
+    "Verificar funcionamiento"
+  ]
+}

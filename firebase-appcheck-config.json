@@ -1,0 +1,15 @@
+{
+  "project": "soygay-b9bc5",
+  "appCheck": {
+    "enforcement": {
+      "firebase.googleapis.com/v1alpha/projects/{project}/accounts:signUp": "UNENFORCED",
+      "firebase.googleapis.com/v1alpha/projects/{project}/accounts:signInWithPassword": "UNENFORCED",
+      "firebase.googleapis.com/v1alpha/projects/{project}/accounts:signInWithCustomToken": "UNENFORCED"
+    },
+    "providers": {
+      "recaptchaV3": {
+        "siteKey": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-"
+      }
+    }
+  }
+}

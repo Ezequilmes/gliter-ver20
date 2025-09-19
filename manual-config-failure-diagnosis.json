@@ -1,0 +1,45 @@
+{
+  "timestamp": "2025-09-18T02:38:00.854Z",
+  "reportType": "MANUAL_CONFIG_FAILURE_DIAGNOSIS",
+  "errorsPersisting": true,
+  "originalErrors": [
+    {
+      "error": "App Check exchangeDebugToken 400",
+      "status": "PERSISTING",
+      "cause": "Token de debug no configurado o inválido"
+    },
+    {
+      "error": "Authentication signInWithPassword 401",
+      "status": "PERSISTING",
+      "cause": "Dependiente de App Check funcionando"
+    }
+  ],
+  "configurationStatus": {
+    "envLocal": true,
+    "envProduction": true,
+    "firebaseConfig": true,
+    "debugToken": false
+  },
+  "configurationIssues": [
+    "NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN no está en .env.local"
+  ],
+  "deploymentStatus": {
+    "deployed": true,
+    "accessible": true
+  },
+  "criticalIssues": [
+    "Token de debug no configurado"
+  ],
+  "fixInstructions": [
+    "Configurar token de debug de App Check"
+  ],
+  "nextSteps": [
+    "Configurar token de debug de App Check en Firebase Console",
+    "Agregar token a .env.local",
+    "Verificar configuración de firebase.ts",
+    "Redesplegar aplicación",
+    "Probar en navegador"
+  ],
+  "urgency": "HIGH",
+  "estimatedFixTime": "15-30 minutos"
+}

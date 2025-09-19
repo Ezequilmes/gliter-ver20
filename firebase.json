@@ -1,48 +1,4 @@
 {
-  "hosting": [
-    {
-      "site": "gliter-com-ar",
-      "public": "public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-        { "source": "/api/auth/**", "function": {"region": "us-central1", "functionId": "authHandler"} },
-        { "source": "/api/users/**", "function": {"region": "us-central1", "functionId": "usersHandler"} },
-        { "source": "/api/chat/**", "function": {"region": "us-central1", "functionId": "chatHandler"} },
-        { "source": "/api/payments/**", "function": {"region": "us-central1", "functionId": "paymentsHandler"} },
-        { "source": "**", "run": { "serviceId": "web-prod", "region": "us-central1" } }
-      ],
-      "headers": [
-        { "source": "**/*.@(js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico)", "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ] },
-        { "source": "/_next/static/**", "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ] },
-        { "source": "**/*.@(html|json)", "headers": [ { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" } ] },
-        { "source": "**/*.txt", "headers": [ { "key": "Content-Type", "value": "text/plain; charset=utf-8" } ] },
-        { "source": "/**", "headers": [ 
-          { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" }
-        ] }
-      ],
-      "redirects": [
-        { "source": "/auth.html", "destination": "/auth", "type": 301 },
-        { "source": "/favicon.ico", "destination": "/icon.svg", "type": 301 }
-      ]
-    },
-    {
-      "target": "www",
-      "public": "public",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "redirects": [
-        { "source": "/**", "destination": "https://web-prod--soygay-b9bc5.us-central1.hosted.app", "type": 301 }
-      ]
-    }
-  ],
   "apphosting": [
     {
       "backendId": "web-prod",
@@ -52,10 +8,92 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
-        "functions"
-      ]
+        "functions",
+        "out",
+        "dist",
+        "*.backup"
+      ],
+      "alwaysDeployFromSource": true
     }
   ],
+  "hosting": {
+    "target": "main",
+    "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-XSS-Protection",
+            "value": "1; mode=block"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "geolocation=(self), microphone=(), camera=()"
+          }
+        ]
+      },
+      {
+        "source": "/",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.google.com https://apis.google.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com wss://*.firebaseio.com; frame-src 'self' https://www.google.com; object-src 'none'; base-uri 'self';"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(eot|otf|ttf|ttc|woff|font.css)",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=604800"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=604800"
+          }
+        ]
+      }
+    ]
+  },
   "functions": {
     "source": "functions",
     "runtime": "nodejs20"
@@ -71,11 +109,23 @@
     "rules": "database.rules.json"
   },
   "emulators": {
-    "auth": { "port": 9099 },
-    "functions": { "port": 5001 },
-    "firestore": { "port": 8080 },
-    "hosting": { "port": 5000 },
-    "storage": { "port": 9199 },
-    "ui": { "enabled": true }
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }

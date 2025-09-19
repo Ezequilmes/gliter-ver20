@@ -7,7 +7,7 @@ export interface User {
     lat: number;
     lng: number;
   };
-  rolSexual?: 'pasivo' | 'activo' | 'versátil' | null;
+  rolSexual?: 'pasivo' | 'activo' | 'versatil' | null;
   fotoPerfil: string;
   fotosAdicionales: string[];
   favoritos: string[];
@@ -43,7 +43,7 @@ export interface AuthFormData {
   genero: string;
   email: string;
   password: string;
-  rolSexual?: 'pasivo' | 'activo' | 'versátil';
+  rolSexual?: 'pasivo' | 'activo' | 'versatil';
   fotoPerfil: File | null;
   fotosAdicionales: File[];
   ubicacion?: UserLocation;

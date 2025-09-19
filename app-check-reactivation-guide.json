@@ -1,0 +1,168 @@
+{
+  "timestamp": "2025-09-18T18:57:30.781Z",
+  "currentStatus": "app_check_temporarily_disabled",
+  "recaptchaInfo": [
+    {
+      "title": "Funcionamiento sin interrupciones",
+      "description": "reCAPTCHA v3 nunca interrumpe a los usuarios, funciona en segundo plano"
+    },
+    {
+      "title": "Sistema de puntuaciones",
+      "description": "Devuelve puntuaciones de 0.0 (bot) a 1.0 (humano), umbral recomendado: 0.5"
+    },
+    {
+      "title": "Aprendizaje adaptativo",
+      "description": "Necesita tráfico real para aprender patrones, mejora con el tiempo"
+    },
+    {
+      "title": "Acciones contextuales",
+      "description": "Permite diferentes acciones (login, submit, homepage) para análisis específico"
+    }
+  ],
+  "preChecks": [
+    {
+      "step": "Google reCAPTCHA Console",
+      "url": "https://www.google.com/recaptcha/admin",
+      "checks": [
+        "Verificar que soygay-b9bc5.web.app esté en dominios autorizados",
+        "Confirmar que reCAPTCHA v3 esté habilitado",
+        "Revisar métricas y estadísticas actuales",
+        "Verificar que no hay alertas o problemas"
+      ]
+    },
+    {
+      "step": "Firebase Console - App Check",
+      "url": "https://console.firebase.google.com",
+      "checks": [
+        "Ir a App Check en el proyecto soygay-b9bc5",
+        "Verificar configuración de reCAPTCHA v3",
+        "Revisar métricas de tokens válidos/inválidos",
+        "Generar nuevo debug token si es necesario"
+      ]
+    },
+    {
+      "step": "Firebase Console - Authentication",
+      "url": "https://console.firebase.google.com",
+      "checks": [
+        "Ir a Authentication > Settings > Authorized domains",
+        "Confirmar que soygay-b9bc5.web.app está autorizado",
+        "Verificar que no hay restricciones adicionales",
+        "Revisar configuración de proveedores de autenticación"
+      ]
+    }
+  ],
+  "reactivationSteps": [
+    {
+      "step": "Ejecutar análisis previo",
+      "command": "node scripts/recaptcha-v3-analysis.js",
+      "description": "Revisar configuración actual y recomendaciones"
+    },
+    {
+      "step": "Verificar prerrequisitos",
+      "command": "Verificación manual en consolas",
+      "description": "Completar todas las verificaciones listadas arriba"
+    },
+    {
+      "step": "Reactivar App Check",
+      "command": "node scripts/reactivate-app-check-safely.js",
+      "description": "Script automatizado que incluye backup y rollback"
+    },
+    {
+      "step": "Verificar funcionamiento",
+      "command": "node scripts/verify-app-check-fix.js",
+      "description": "Confirmar que no hay errores después de la reactivación"
+    }
+  ],
+  "monitoringAreas": [
+    {
+      "area": "Firebase Console - App Check",
+      "metrics": [
+        "Tokens válidos vs inválidos",
+        "Errores de verificación",
+        "Volumen de solicitudes",
+        "Tendencias temporales"
+      ]
+    },
+    {
+      "area": "Google reCAPTCHA Console",
+      "metrics": [
+        "Puntuaciones promedio",
+        "Distribución de puntuaciones",
+        "Acciones más utilizadas",
+        "Detección de patrones anómalos"
+      ]
+    },
+    {
+      "area": "Aplicación Web",
+      "metrics": [
+        "Errores en DevTools Console",
+        "Tiempo de respuesta de autenticación",
+        "Tasa de éxito de login/registro",
+        "Experiencia de usuario general"
+      ]
+    }
+  ],
+  "considerations": [
+    "reCAPTCHA v3 necesita 24-48 horas para estabilizar puntuaciones",
+    "Las puntuaciones iniciales pueden ser diferentes a las de producción",
+    "Monitorear durante horarios de mayor tráfico",
+    "Estar preparado para rollback si hay problemas",
+    "Documentar cualquier ajuste de configuración necesario"
+  ],
+  "rollbackSteps": [
+    "Cambiar NEXT_PUBLIC_DISABLE_APP_CHECK=true en .env.local",
+    "Ejecutar npm run build",
+    "Desplegar con firebase deploy --only hosting",
+    "Verificar que la aplicación funciona sin errores",
+    "Investigar causa del problema antes de reintentar"
+  ],
+  "checklist": [
+    {
+      "task": "Verificar Google reCAPTCHA Console",
+      "completed": false
+    },
+    {
+      "task": "Verificar Firebase App Check Console",
+      "completed": false
+    },
+    {
+      "task": "Verificar Firebase Auth dominios autorizados",
+      "completed": false
+    },
+    {
+      "task": "Ejecutar análisis de reCAPTCHA v3",
+      "completed": false
+    },
+    {
+      "task": "Crear backup de configuración actual",
+      "completed": false
+    },
+    {
+      "task": "Reactivar App Check",
+      "completed": false
+    },
+    {
+      "task": "Construir y desplegar aplicación",
+      "completed": false
+    },
+    {
+      "task": "Verificar funcionamiento en producción",
+      "completed": false
+    },
+    {
+      "task": "Configurar monitoreo de métricas",
+      "completed": false
+    },
+    {
+      "task": "Documentar resultados y ajustes",
+      "completed": false
+    }
+  ],
+  "successCriteria": [
+    "No hay errores de App Check en DevTools Console",
+    "Login y registro funcionan correctamente",
+    "Métricas de App Check muestran tokens válidos",
+    "Puntuaciones de reCAPTCHA están en rangos esperados",
+    "No hay degradación en la experiencia de usuario"
+  ]
+}

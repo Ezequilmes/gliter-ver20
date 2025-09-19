@@ -1,0 +1,7 @@
+
+# CONFIGURACIÓN DE EMERGENCIA - App Check Deshabilitado
+# Usar solo para desarrollo/debugging
+NEXT_PUBLIC_DISABLE_APP_CHECK=true
+
+# Cuando esté listo, cambiar a:
+# NEXT_PUBLIC_DISABLE_APP_CHECK=false

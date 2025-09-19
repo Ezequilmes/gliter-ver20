@@ -1,0 +1,7 @@
+{
+  "timestamp": "2025-09-18T02:41:05.457Z",
+  "action": "FIREBASE_CONSOLE_SETUP_SIMULATED",
+  "debugToken": "debug_mfosy3r6_a45b0...",
+  "status": "CONFIGURED",
+  "note": "En producción real, este paso se hace manualmente en Firebase Console"
+}

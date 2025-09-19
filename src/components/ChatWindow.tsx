@@ -1,17 +1,47 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Image as ImageIcon, Smile, MoreVertical } from 'lucide-react';
 import { User, Message } from '@/types';
 import MessageBubble from './MessageBubble';
 import Image from 'next/image';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  doc,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  updateDoc,
+  serverTimestamp,
+  where,
+  limit,
+  writeBatch,
+  getDocs
+} from 'firebase/firestore';
 
 interface ChatWindowProps {
   currentUser: User;
   otherUser: User;
   onSendMessage: (message: string, type: 'texto' | 'foto', file?: File) => void;
   onClose: () => void;
-  chatId?: string;
+  chatId: string;
+}
+
+interface FirebaseMessage {
+  id: string;
+  text: string;
+  senderId: string;
+  receiverId: string;
+  timestamp: import('firebase/firestore').Timestamp | null | undefined;
+  read: boolean;
+  type: 'text' | 'image' | 'location';
+  imageUrl?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -19,62 +49,122 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   otherUser,
   onSendMessage,
   onClose,
+  chatId
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock de mensajes
-  useEffect(() => {
-    const mockMessages: Message[] = [
-      {
-        id: '1',
-        senderId: otherUser.uid,
-        message: `¡Hola! Me gusta tu perfil 😊`,
-        tipo: 'texto',
-        timestamp: new Date(Date.now() - 3600000) // 1 hour ago
-      },
-      {
-        id: '2',
-        senderId: currentUser.uid,
-        message: '¡Hola! Gracias, el tuyo también está genial',
-        tipo: 'texto',
-        timestamp: new Date(Date.now() - 3500000)
-      },
-      {
-        id: '3',
-        senderId: otherUser.uid,
-        message: '¿Te gustaría conocernos mejor?',
-        tipo: 'texto',
-        timestamp: new Date(Date.now() - 3400000)
-      }
-    ];
-    setMessages(mockMessages);
-  }, [currentUser.uid, otherUser.uid]);
-
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
+  const userId = currentUser?.uid;
+
+  // Marcar mensajes como leídos
+  const markMessagesAsRead = useCallback(async () => {
+    if (!userId || !chatId) return;
+
+    try {
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      const q = query(
+        messagesRef,
+        where('receiverId', '==', userId),
+        where('read', '==', false)
+      );
+
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return;
+      
+      const batch = writeBatch(db);
+      snapshot.forEach((doc) => {
+        batch.update(doc.ref, { read: true });
+      });
+      
+      await batch.commit();
+    } catch (error) {
+      console.error('Error marcando mensajes como leídos:', error);
+    }
+  }, [userId, chatId]);
+
+  // Cargar mensajes en tiempo real desde Firebase
+  useEffect(() => {
+    if (!chatId || !currentUser || !otherUser) return;
+
+    const messagesRef = collection(db, 'chats', chatId, 'messages');
+    const q = query(messagesRef, orderBy('timestamp', 'asc'), limit(100));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const firebaseMessages: FirebaseMessage[] = [];
+      snapshot.forEach((doc) => {
+        firebaseMessages.push({
+          id: doc.id,
+          ...doc.data()
+        } as FirebaseMessage);
+      });
+      
+      // Convertir mensajes de Firebase al formato de la app
+      const convertedMessages: Message[] = firebaseMessages.map(msg => ({
+        id: msg.id,
+        senderId: msg.senderId,
+        message: msg.text,
+        tipo: msg.type === 'image' ? 'foto' : 'texto',
+        timestamp: msg.timestamp?.toDate() || new Date(),
+        urlFoto: msg.imageUrl
+      }));
+      
+      setMessages(convertedMessages);
+      setLoading(false);
+      
+      // Marcar mensajes como leídos
+      markMessagesAsRead();
+      
+      // Scroll al final
+      setTimeout(scrollToBottom, 100);
+    });
+
+    return () => unsubscribe();
+  }, [chatId, currentUser, otherUser, markMessagesAsRead, scrollToBottom]);
+
+  // Hacer scroll al final cuando cambian los mensajes
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || sending || !currentUser || !otherUser) return;
+
+    setSending(true);
+    try {
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      await addDoc(messagesRef, {
+        text: newMessage.trim(),
         senderId: currentUser.uid,
-        message: newMessage,
-        tipo: 'texto',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, message]);
+        receiverId: otherUser.uid,
+        timestamp: serverTimestamp(),
+        read: false,
+        type: 'text'
+      });
+
+      // Actualizar información del chat
+      const chatRef = doc(db, 'chats', chatId);
+      await updateDoc(chatRef, {
+        lastMessage: newMessage.trim(),
+        lastMessageTime: serverTimestamp(),
+        lastMessageSender: currentUser.uid,
+        participants: [currentUser.uid, otherUser.uid]
+      });
+
       onSendMessage(newMessage, 'texto');
       setNewMessage('');
+    } catch (error) {
+      console.error('Error enviando mensaje:', error);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -85,20 +175,39 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const message: Message = {
-        id: Date.now().toString(),
+    if (!file || !file.type.startsWith('image/') || sending) return;
+
+    setSending(true);
+    try {
+      // TODO: Implementar subida de imagen a Firebase Storage
+      // Por ahora, solo enviamos un mensaje de texto indicando que se envió una foto
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      await addDoc(messagesRef, {
+        text: 'Foto enviada',
         senderId: currentUser.uid,
-        message: 'Foto enviada',
-        tipo: 'foto',
-        urlFoto: URL.createObjectURL(file),
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, message]);
+        receiverId: otherUser.uid,
+        timestamp: serverTimestamp(),
+        read: false,
+        type: 'image',
+        imageUrl: URL.createObjectURL(file) // Temporal, debería ser la URL de Storage
+      });
+
+      // Actualizar información del chat
+      const chatRef = doc(db, 'chats', chatId);
+      await updateDoc(chatRef, {
+        lastMessage: 'Foto enviada',
+        lastMessageTime: serverTimestamp(),
+        lastMessageSender: currentUser.uid,
+        participants: [currentUser.uid, otherUser.uid]
+      });
+
       onSendMessage('Foto enviada', 'foto', file);
+    } catch (error) {
+      console.error('Error enviando imagen:', error);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -134,7 +243,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           </div>
           <div>
             <h3 className="font-semibold text-gray-900">{otherUser.nombre}</h3>
-            <p className="text-sm text-green-500">En línea</p>
+            <p className="text-sm text-green-500">En linea</p>
           </div>
         </div>
         
@@ -155,14 +264,28 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Área de mensajes */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <MessageBubble
-            key={message.id}
-            message={message}
-            isOwn={message.senderId === currentUser.uid}
-            senderName={message.senderId === currentUser.uid ? currentUser.nombre : otherUser.nombre}
-          />
-        ))}
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500" />
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <Send className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">¡Inicia la conversación!</h3>
+            <p className="text-gray-600">Envía tu primer mensaje para comenzar a chatear</p>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              isOwn={message.senderId === currentUser.uid}
+              senderName={message.senderId === currentUser.uid ? currentUser.nombre : otherUser.nombre}
+            />
+          ))
+        )}
         
         <div ref={messagesEndRef} />
       </div>
@@ -229,11 +352,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             
             <button
               onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
+              disabled={!newMessage.trim() || sending}
               className="p-2 bg-primary-500 text-white rounded-full hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title="Enviar mensaje"
             >
-              <Send className="w-5 h-5" />
+              {sending ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>

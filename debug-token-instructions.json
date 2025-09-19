@@ -1,0 +1,35 @@
+{
+  "steps": [
+    {
+      "step": 1,
+      "title": "Ir a Firebase Console",
+      "url": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+      "description": "Abrir la sección de App Check en Firebase Console"
+    },
+    {
+      "step": 2,
+      "title": "Seleccionar la app web",
+      "description": "Buscar y seleccionar la app con ID: 1:982386751624:web:20a3ee764ec4c6f0da073d"
+    },
+    {
+      "step": 3,
+      "title": "Ir a Debug tokens",
+      "description": "Hacer clic en la pestaña \"Debug tokens\""
+    },
+    {
+      "step": 4,
+      "title": "Generar nuevo token",
+      "description": "Hacer clic en \"Add debug token\" y copiar el token generado"
+    },
+    {
+      "step": 5,
+      "title": "Actualizar .env.local",
+      "description": "Agregar NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG_TOKEN=<token_generado>"
+    }
+  ],
+  "notes": [
+    "El token de debug solo funciona en desarrollo (localhost)",
+    "Para producción, necesitas configurar reCAPTCHA correctamente",
+    "El token de debug debe regenerarse si expira"
+  ]
+}

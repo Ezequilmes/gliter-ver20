@@ -8,6 +8,7 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { AuthFormData } from '@/types';
 import AuthForm from '@/components/AuthForm';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -36,7 +37,7 @@ const AuthPage = () => {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
     } catch (err: unknown) {
-      setError('Error al iniciar sesión: ' + getErrorMessage(err));
+      setError('Error al iniciar sesion: ' + getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -75,7 +76,7 @@ const AuthPage = () => {
         fotosAdicionalesUrls.push(url);
       }
 
-      // Crear documento privado del usuario en Firestore (colección 'users')
+      // Crear documento privado del usuario en Firestore (coleccion 'users')
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         createdAt: serverTimestamp(),
@@ -91,7 +92,7 @@ const AuthPage = () => {
         lastOnline: serverTimestamp(),
       });
 
-      // Crear documento público para descubrimiento (colección 'publicProfiles')
+      // Crear documento publico para descubrimiento (coleccion 'publicProfiles')
       await setDoc(doc(db, 'publicProfiles', user.uid), {
         displayName: formData.nombre,
         age: formData.edad,
@@ -110,67 +111,69 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            <span className="text-accent-400">Gliter</span>
-          </h1>
-          <p className="text-primary-100">
-            Encuentra tu match perfecto
-          </p>
-        </div>
-
-        {/* Formulario */}
-        <div className="card">
-          <div className="mb-6">
-            <div className="flex rounded-lg bg-gray-100 p-1">
-              <button
-                onClick={() => setIsLogin(true)}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  isLogin
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-                aria-pressed={isLogin}
-              >
-                Iniciar Sesión
-              </button>
-              <button
-                onClick={() => setIsLogin(false)}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  !isLogin
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-                aria-pressed={!isLogin}
-              >
-                Registrarse
-              </button>
-            </div>
+    <ProtectedRoute requireAuth={false}>
+      <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              <span className="text-accent-400">Gliter</span>
+            </h1>
+            <p className="text-primary-100">
+              Encuentra tu match perfecto
+            </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
-              {error}
+          {/* Formulario */}
+          <div className="card">
+            <div className="mb-6">
+              <div className="flex rounded-lg bg-gray-100 p-1">
+                <button
+                  onClick={() => setIsLogin(true)}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                    isLogin
+                      ? 'bg-white text-primary-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  aria-pressed={isLogin}
+                >
+                  Iniciar Sesion
+                </button>
+                <button
+                  onClick={() => setIsLogin(false)}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                    !isLogin
+                      ? 'bg-white text-primary-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  aria-pressed={!isLogin}
+                >
+                  Registrarse
+                </button>
+              </div>
             </div>
-          )}
 
-          <AuthForm
-            isLogin={isLogin}
-            loading={loading}
-            onLogin={handleLogin}
-            onRegister={handleRegister}
-          />
-        </div>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg" role="alert">
+                {error}
+              </div>
+            )}
 
-        {/* Footer */}
-        <div className="text-center mt-6 text-primary-100 text-sm">
-          Al continuar, aceptas nuestros términos y condiciones
+            <AuthForm
+              isLogin={isLogin}
+              loading={loading}
+              onLogin={handleLogin}
+              onRegister={handleRegister}
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-6 text-primary-100 text-sm">
+            Al continuar, aceptas nuestros terminos y condiciones
+          </div>
         </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 };
 

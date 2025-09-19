@@ -9,14 +9,18 @@
     "start": "next start -p ${PORT:-8080}",
     "lint": "next lint",
     "deploy:check": "firebase --version && node --version && npm --version",
-    "deploy:prod": "npm run build && firebase deploy --only apphosting:web-prod --project soygay-b9bc5",
+    "deploy:prod": "npm run build && firebase deploy --only hosting:main",
     "setup:appcheck": "node scripts/setup-app-check.js",
     "deploy:safe": "node scripts/deploy-with-checks.js",
     "verify:production": "node scripts/verify-production.js",
+    "verify:config": "node scripts/verify-production-config.js",
+    "deploy:production": "node scripts/deploy-production.js",
     "test:auth": "node scripts/test-auth.js",
-    "deploy": "firebase deploy --project soygay-b9bc5",
+    "deploy": "npm run build && firebase deploy --only hosting:main",
     "deploy:hosting": "npm run build && firebase deploy --only hosting --project soygay-b9bc5",
-    "deploy:rules": "firebase deploy --only firestore:rules --project soygay-b9bc5"
+    "deploy:rules": "firebase deploy --only firestore:rules --project soygay-b9bc5",
+    "preview": "firebase hosting:channel:deploy preview --only hosting:main",
+    "serve": "firebase serve --only hosting:main"
   },
   "engines": {
     "node": ">=20"
@@ -24,8 +28,9 @@
   "dependencies": {
     "autoprefixer": "^10.4.16",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.2",
     "firebase": "^12.2.1",
-    "lucide-react": "^0.303.0",
+    "lucide-react": "^0.544.0",
     "next": "14.2.32",
     "postcss": "^8.4.33",
     "react": "18.2.0",
@@ -33,14 +38,15 @@
     "react-firebase-hooks": "^5.1.1",
     "tailwindcss": "^3.4.3",
     "use-sync-external-store": "^1.5.0",
-    "zustand": "^4.5.2"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@types/node": "^20.10.5",
+    "@types/node": "^24.5.1",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.32",
+    "firebase-admin": "^13.5.0",
     "typescript": "^5.3.3"
   }
 }

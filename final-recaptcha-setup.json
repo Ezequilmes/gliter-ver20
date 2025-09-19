@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-09-18T01:54:58.166Z",
+  "status": "READY_FOR_FIREBASE_CONFIG",
+  "keys": {
+    "siteKey": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "secretKey": "6LdnbrorAAAAADzPaNdiAFtTfzHvDWI--Wp7T0Ph"
+  },
+  "localConfigOK": true,
+  "nextSteps": [
+    "Configurar Secret Key en Firebase Console",
+    "Verificar dominios en reCAPTCHA Console",
+    "Redesplegar aplicación",
+    "Probar funcionalidad"
+  ],
+  "links": {
+    "firebaseConsole": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+    "recaptchaConsole": "https://www.google.com/recaptcha/admin/site/6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "productionApp": "https://soygay-b9bc5.web.app"
+  }
+}

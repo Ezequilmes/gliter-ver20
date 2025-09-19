@@ -1,47 +1,93 @@
-# Firebase App Hosting configuration
-# See: https://firebase.google.com/docs/app-hosting/configure
+# Configuración simplificada para Firebase App Hosting
+# Compatible con Next.js 14+ y Node.js 20+
+
+# Configuración de build
+build:
+  commands:
+    - npm ci
+    - npm run build
+
+# Configuración de runtime
+runtime:
+  nodeVersion: "20"
+  memory: 1GiB
+  cpu: 1
+  timeoutSeconds: 60
+
+# Variables de entorno
 env:
-  - variable: NEXT_TELEMETRY_DISABLED
-    value: "1"
-    availability:
-      - BUILD
-      - RUNTIME
-  - variable: NODE_OPTIONS
-    value: "--max_old_space_size=2048"
-    availability:
-      - BUILD
-  - variable: NEXT_PUBLIC_APP_URL
-    value: "https://gliter.com.ar"
-    availability:
-      - RUNTIME
-  # Firebase configuration variables (required for build time)
-  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "AIzaSyBs4YagBaR9gXnFLE_tfHhWARpOZdo7m38"
-    availability:
-      - BUILD
-      - RUNTIME
-  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: "soygay-b9bc5.firebaseapp.com"
-    availability:
-      - BUILD
-      - RUNTIME
-  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+  # Firebase Configuration
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID:
     value: "soygay-b9bc5"
     availability:
       - BUILD
       - RUNTIME
-  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+  
+  NEXT_PUBLIC_FIREBASE_API_KEY:
+    value: "AIzaSyBOQKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:
+    value: "soygay-b9bc5.firebaseapp.com"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:
     value: "soygay-b9bc5.appspot.com"
     availability:
       - BUILD
       - RUNTIME
-  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+  
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:
     value: "982386751624"
     availability:
       - BUILD
       - RUNTIME
-  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: "1:982386751624:web:20a3ee764ec4c6f0da073d"
+  
+  NEXT_PUBLIC_FIREBASE_APP_ID:
+    value: "1:982386751624:web:your-app-id"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  # Next.js Configuration
+  NEXT_TELEMETRY_DISABLED:
+    value: "1"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  NODE_OPTIONS:
+    value: "--max-old-space-size=4096"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  # App Configuration
+  NODE_ENV:
+    value: "production"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  PORT:
+    value: "8080"
+    availability:
+      - RUNTIME
+  
+  # Deshabilitar App Check temporalmente para resolver error 401
+  NEXT_PUBLIC_DISABLE_APP_CHECK:
+    value: "true"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  # Vertex AI API Key
+  VERTEX_AI_API_KEY:
+    value: "AQ.Ab8RN6IZcr5ZnTmCUo3EgZHB39T8UJ0Kx2y1mUWN5x1X9R0AoQ"
     availability:
       - BUILD
       - RUNTIME

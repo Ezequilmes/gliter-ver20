@@ -1,0 +1,21 @@
+{
+  "appCheck": {
+    "provider": "reCAPTCHA v3",
+    "siteKey": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "mode": "UNENFORCED",
+    "services": {
+      "Firebase Authentication": "UNENFORCED",
+      "Cloud Firestore": "UNENFORCED",
+      "Realtime Database": "UNENFORCED"
+    }
+  },
+  "environment": {
+    "NEXT_PUBLIC_DISABLE_APP_CHECK": "false",
+    "NEXT_PUBLIC_RECAPTCHA_SITE_KEY": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "production": true
+  },
+  "project": {
+    "id": "soygay-b9bc5",
+    "name": "soygay-b9bc5"
+  }
+}

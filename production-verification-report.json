@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-09-18T02:29:54.125Z",
+  "productionUrl": "https://soygay-b9bc5.web.app",
+  "tests": [
+    {
+      "name": "Application Load",
+      "status": "PASS",
+      "details": "Status: 200"
+    },
+    {
+      "name": "Security Headers",
+      "status": "PASS",
+      "details": "3/3 headers configurados"
+    },
+    {
+      "name": "reCAPTCHA Configuration",
+      "status": "WARNING",
+      "details": "Site key no visible en el HTML"
+    },
+    {
+      "name": "Auth Page Access",
+      "status": "FAIL",
+      "details": "Status: 301"
+    },
+    {
+      "name": "SEO Files",
+      "status": "PASS",
+      "details": "robots.txt y sitemap.xml accesibles"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "passed": 3,
+    "warnings": 1,
+    "failed": 1,
+    "overallStatus": "NEEDS_ATTENTION"
+  }
+}

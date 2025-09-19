@@ -17,7 +17,7 @@ export const updateUserLocation = onCall(async (request) => {
 // Admin-only: requires request.auth.token.admin === true
 // Migrates a batch of users documents into publicProfiles with the allowed fields
 export const migrateUsersToPublicProfiles = onCall<{ pageSize?: number; startAfterId?: string }>(async (request) => {
-  if (!request.auth || (request.auth.token as any).admin !== true) {
+  if (!request.auth || request.auth.token?.admin !== true) {
     throw new Error('unauthorized');
   }
 
@@ -36,15 +36,31 @@ export const migrateUsersToPublicProfiles = onCall<{ pageSize?: number; startAft
 
   for (const docSnap of snap.docs) {
     const uid = docSnap.id;
-    const data = docSnap.data() as any;
+    const data = docSnap.data() as Record<string, unknown>;
 
-    const displayName: string = String(data.nombre || data.displayName || 'Usuario');
-    const ageNum = Number(data.edad ?? data.age);
+    const displayNameCandidate = (data['nombre'] ?? data['displayName']);
+    const displayName: string =
+      typeof displayNameCandidate === 'string' && displayNameCandidate.trim()
+        ? displayNameCandidate
+        : 'Usuario';
+
+    const ageCandidate = (data['edad'] ?? data['age']);
+    const ageNum =
+      typeof ageCandidate === 'number'
+        ? ageCandidate
+        : typeof ageCandidate === 'string'
+        ? Number(ageCandidate)
+        : NaN;
     const age: number = Number.isFinite(ageNum) ? Math.max(18, Math.min(100, Math.floor(ageNum))) : 18;
 
-    const gender: string | undefined = data.genero || data.gender || undefined;
-    const photoURL: string | undefined = data.fotoPerfil || data.photoURL || undefined;
-    const location = data.ubicacion || data.location || undefined;
+    const genderCandidate = (data['genero'] ?? data['gender']);
+    const gender: string | undefined = typeof genderCandidate === 'string' ? genderCandidate : undefined;
+
+    const photoURLCandidate = (data['fotoPerfil'] ?? data['photoURL']);
+    const photoURL: string | undefined = typeof photoURLCandidate === 'string' ? photoURLCandidate : undefined;
+
+    const locationCandidate = (data['ubicacion'] ?? data['location']);
+    const location = typeof locationCandidate === 'object' && locationCandidate !== null ? locationCandidate : undefined;
 
     // Build allowed payload according to rules
     const payload: Record<string, unknown> = {
@@ -52,9 +68,9 @@ export const migrateUsersToPublicProfiles = onCall<{ pageSize?: number; startAft
       age,
       lastActive: FieldValue.serverTimestamp(),
     };
-    if (gender && typeof gender === 'string') payload.gender = gender;
-    if (photoURL && typeof photoURL === 'string') payload.photoURL = photoURL;
-    if (location && typeof location === 'object') payload.location = location;
+    if (gender) payload.gender = gender;
+    if (photoURL) payload.photoURL = photoURL;
+    if (location) payload.location = location;
 
     batch.set(db.collection('publicProfiles').doc(uid), payload, { merge: true });
     migrated += 1;

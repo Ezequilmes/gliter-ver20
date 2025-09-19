@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-09-18T18:33:39.700Z",
+  "error": "firebase-app-check-token-is-invalid",
+  "currentConfig": {
+    "siteKey": "6Lc9IcwrAAAAAN0Sk6c0O8hKkr6DVaWbOAV-Aqpw",
+    "debugToken": "CONFIGURED",
+    "appCheckDisabled": false
+  },
+  "issues": [],
+  "solutions": [
+    "Verificar reCAPTCHA en Google Console",
+    "Verificar App Check en Firebase Console",
+    "Generar nuevo token de debug",
+    "Verificar dominios autorizados",
+    "Usar configuración de emergencia si es necesario"
+  ],
+  "urls": {
+    "recaptcha": "https://www.google.com/recaptcha/admin",
+    "appCheck": "https://console.firebase.google.com/project/soygay-b9bc5/appcheck",
+    "auth": "https://console.firebase.google.com/project/soygay-b9bc5/authentication/settings"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "project": "soygay-b9bc5",
+  "app": "1:982386751624:web:20a3ee764ec4c6f0da073d",
+  "providers": {
+    "recaptcha": {
+      "siteKey": "REQUIRED - Configurar en Google Cloud Console",
+      "action": "LOGIN"
+    },
+    "debug": {
+      "token": "REQUIRED - Generar en Firebase Console"
+    }
+  },
+  "settings": {
+    "isTokenAutoRefreshEnabled": true,
+    "tokenGracePeriodMillis": 300000
+  }
+}

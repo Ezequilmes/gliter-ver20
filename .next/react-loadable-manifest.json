@@ -1,1 +1,6 @@
-{}
+{
+  "lib\\firebase.ts -> firebase/firestore": {
+    "id": 5978,
+    "files": []
+  }
+}

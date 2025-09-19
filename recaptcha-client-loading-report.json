@@ -1,0 +1,26 @@
+{
+  "envConfig": {
+    "found": true,
+    "key": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-",
+    "isValid": true
+  },
+  "firebaseConfig": {
+    "hasReCaptchaImport": true,
+    "hasAppCheckInit": true,
+    "hasClientCheck": true,
+    "hasEnvReference": true
+  },
+  "clientSideAccess": {
+    "isAvailable": true,
+    "isPublic": true,
+    "value": "6LdnbrorAAAAAK6ugsSqPMnPxhdnrpA0C69hVFw-"
+  },
+  "buildOutput": {
+    "exists": true
+  },
+  "recommendations": [
+    "Verificar en DevTools del navegador que window.grecaptcha esté disponible",
+    "Comprobar en Network tab que se carga el script de reCAPTCHA",
+    "Revisar Console para errores de App Check o reCAPTCHA"
+  ]
+}

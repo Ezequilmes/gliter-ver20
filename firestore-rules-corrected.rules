@@ -1,0 +1,182 @@
+// Firestore Security Rules - PRODUCCIÓN (App Check habilitado)
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Función helper para verificar autenticación
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Función helper para verificar si el usuario es el propietario
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Función helper para verificar si el usuario es admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admin/$(request.auth.uid));
+    }
+    
+    // Función helper para verificar App Check (HABILITADO EN PRODUCCIÓN)
+    function isAppCheckValid() {
+      return request.app_check_token != null;
+    }
+    
+    // Función helper para verificar datos válidos del usuario
+    function isValidUserData(data) {
+      return data.keys().hasAll(['email', 'displayName', 'createdAt']) &&
+             data.email is string &&
+             data.displayName is string &&
+             data.createdAt is timestamp;
+    }
+    
+    // Función helper para verificar datos válidos del chat
+    function isValidChatData(data) {
+      return data.keys().hasAll(['participants', 'createdAt', 'lastMessage']) &&
+             data.participants is list &&
+             data.participants.size() == 2 &&
+             data.createdAt is timestamp;
+    }
+    
+    // Función helper para verificar si el usuario participa en el chat
+    function isParticipant(chatData) {
+      return request.auth.uid in chatData.participants;
+    }
+    
+    // Colección de usuarios
+    match /users/{userId} {
+      // Lectura: usuario autenticado puede leer su propio perfil o perfiles públicos
+      allow read: if isAuthenticated() && isAppCheckValid() &&
+                     (isOwner(userId) || 
+                      resource.data.get('isPublic', false) == true);
+      
+      // Escritura: solo el propietario puede crear/actualizar su perfil
+      allow create: if isAuthenticated() && isAppCheckValid() &&
+                       isOwner(userId) &&
+                       isValidUserData(request.resource.data);
+      
+      allow update: if isAuthenticated() && isAppCheckValid() &&
+                       isOwner(userId) &&
+                       isValidUserData(request.resource.data);
+      
+      // Eliminación: solo el propietario o admin
+      allow delete: if isAuthenticated() && isAppCheckValid() &&
+                       (isOwner(userId) || isAdmin());
+    }
+    
+    // Colección de chats
+    match /chats/{chatId} {
+      // Lectura: solo participantes del chat
+      allow read: if isAuthenticated() && isAppCheckValid() &&
+                     isParticipant(resource.data);
+      
+      // Creación: usuario autenticado que sea participante
+      allow create: if isAuthenticated() && isAppCheckValid() &&
+                       isValidChatData(request.resource.data) &&
+                       isParticipant(request.resource.data);
+      
+      // Actualización: solo participantes pueden actualizar
+      allow update: if isAuthenticated() && isAppCheckValid() &&
+                       isParticipant(resource.data) &&
+                       isParticipant(request.resource.data);
+      
+      // Eliminación: solo admin o participantes
+      allow delete: if isAuthenticated() && isAppCheckValid() &&
+                       (isAdmin() || isParticipant(resource.data));
+      
+      // Mensajes dentro de chats
+      match /messages/{messageId} {
+        // Lectura: solo participantes del chat padre
+        allow read: if isAuthenticated() && isAppCheckValid() &&
+                       isParticipant(get(/databases/$(database)/documents/chats/$(chatId)).data);
+        
+        // Creación: solo participantes pueden enviar mensajes
+        allow create: if isAuthenticated() && isAppCheckValid() &&
+                         isParticipant(get(/databases/$(database)/documents/chats/$(chatId)).data) &&
+                         request.resource.data.senderId == request.auth.uid &&
+                         request.resource.data.keys().hasAll(['content', 'senderId', 'timestamp']) &&
+                         request.resource.data.content is string &&
+                         request.resource.data.senderId is string &&
+                         request.resource.data.timestamp is timestamp;
+        
+        // Actualización: solo el remitente puede editar sus mensajes
+        allow update: if isAuthenticated() && isAppCheckValid() &&
+                         isParticipant(get(/databases/$(database)/documents/chats/$(chatId)).data) &&
+                         resource.data.senderId == request.auth.uid &&
+                         request.resource.data.senderId == request.auth.uid;
+        
+        // Eliminación: remitente o admin
+        allow delete: if isAuthenticated() && isAppCheckValid() &&
+                         (resource.data.senderId == request.auth.uid || isAdmin());
+      }
+    }
+    
+    // Colección de reportes
+    match /reports/{reportId} {
+      // Lectura: solo admins
+      allow read: if isAuthenticated() && isAppCheckValid() && isAdmin();
+      
+      // Creación: usuarios autenticados pueden crear reportes
+      allow create: if isAuthenticated() && isAppCheckValid() &&
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['reporterId', 'reportedUserId', 'reason', 'createdAt']) &&
+                       request.resource.data.reason is string &&
+                       request.resource.data.createdAt is timestamp;
+      
+      // Actualización: solo admins
+      allow update: if isAuthenticated() && isAppCheckValid() && isAdmin();
+      
+      // Eliminación: solo admins
+      allow delete: if isAuthenticated() && isAppCheckValid() && isAdmin();
+    }
+    
+    // Colección de administradores
+    match /admin/{adminId} {
+      // Lectura: solo admins pueden ver la lista de admins
+      allow read: if isAuthenticated() && isAppCheckValid() && isAdmin();
+      
+      // Escritura: solo super admins (definidos en el documento)
+      allow write: if isAuthenticated() && isAppCheckValid() &&
+                      exists(/databases/$(database)/documents/admin/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/admin/$(request.auth.uid)).data.get('isSuperAdmin', false) == true;
+    }
+    
+    // Colección de configuración de la app
+    match /config/{configId} {
+      // Lectura: todos los usuarios autenticados
+      allow read: if isAuthenticated() && isAppCheckValid();
+      
+      // Escritura: solo admins
+      allow write: if isAuthenticated() && isAppCheckValid() && isAdmin();
+    }
+    
+    // Colección de notificaciones
+    match /notifications/{notificationId} {
+      // Lectura: solo el destinatario
+      allow read: if isAuthenticated() && isAppCheckValid() &&
+                     resource.data.userId == request.auth.uid;
+      
+      // Creación: sistema o admins
+      allow create: if isAuthenticated() && isAppCheckValid() &&
+                       (isAdmin() || 
+                        request.resource.data.userId == request.auth.uid);
+      
+      // Actualización: solo el destinatario (para marcar como leída)
+      allow update: if isAuthenticated() && isAppCheckValid() &&
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Eliminación: destinatario o admin
+      allow delete: if isAuthenticated() && isAppCheckValid() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // Denegar acceso a cualquier otra colección no especificada
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

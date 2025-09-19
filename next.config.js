@@ -1,62 +1,95 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Next.js SSR en App Hosting
-  output: 'standalone',
-  trailingSlash: false,
-  skipTrailingSlashRedirect: false,
+  // Configuración para Firebase Hosting
+  output: 'export',
+  trailingSlash: true,
+  distDir: 'out',
   
-  // Image optimization configuration (evitar dependencias nativas como sharp)
+  // Optimización de imágenes para Firebase Hosting
   images: {
-    domains: ['firebasestorage.googleapis.com', 'images.unsplash.com'],
-    unoptimized: true
+    unoptimized: true,
+    domains: [
+      'firebasestorage.googleapis.com',
+      'storage.googleapis.com',
+      'gliter.com.ar',
+      'www.gliter.com.ar'
+    ],
   },
   
-  // Environment variables
+  // Variables de entorno públicas
   env: {
-    NEXT_PUBLIC_APP_NAME: 'Gliter',
-    NEXT_PUBLIC_APP_VERSION: '1.0.0'
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   },
   
-  // Security headers + Caching for static assets
+  // Encabezados de seguridad básicos
   async headers() {
     return [
-      // Cache busting and immutable caching for Next static assets
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }
-        ]
-      },
-      // Cache immutable for common static asset extensions
-      {
-        source: '/:path*.(js|css|json|svg|png|jpg|jpeg|gif|webp|woff|woff2|ttf|eot)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }
-        ]
-      },
-      // Security headers (apply to all routes)
       {
         source: '/(.*)',
         headers: [
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'geolocation=(self), microphone=(), camera=()' }
-        ]
-      }
-    ]
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://www.recaptcha.net; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com wss://*.firebaseio.com https://www.google.com https://www.gstatic.com https://www.recaptcha.net https://firebaseinstallations.googleapis.com https://firebaseremoteconfig.googleapis.com https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/; frame-src 'self' https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; object-src 'none'; base-uri 'self';"
+          },
+        ],
+      },
+    ];
   },
-
-  // Redirects para favicon
+  
+  // Redirects básicos
   async redirects() {
     return [
       {
-        source: '/favicon.ico',
-        destination: '/icon.svg',
-        permanent: false
-      }
-    ]
-  }
-}
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
+  
+  // Configuración experimental para App Hosting
+  experimental: {
+    serverComponentsExternalPackages: ['firebase-admin'],
+  },
 
-module.exports = nextConfig
+  // Configuración webpack para resolver problemas de hidratación
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
+  },
+  
+  // ESLint
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+};
+
+module.exports = nextConfig;

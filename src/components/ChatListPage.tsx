@@ -39,7 +39,7 @@ const ChatListPage = () => {
           edad: 25,
           genero: 'Mujer',
           ubicacion: { lat: -34.6037, lng: -58.3816 },
-          rolSexual: 'versátil',
+          rolSexual: 'versatil',
           fotoPerfil: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
           fotosAdicionales: [],
           favoritos: [],
@@ -81,7 +81,7 @@ const ChatListPage = () => {
         {
           id: 'chat1',
           participants: [user.uid, 'user1'],
-          lastMessage: '¡Hola! ¿Cómo estás? 😊',
+          lastMessage: '¡Hola! ¿Como estas? 😊',
           lastTimestamp: new Date(Date.now() - 300000) // 5 min ago
         },
         {
@@ -195,11 +195,11 @@ const ChatListPage = () => {
             <div className="text-center py-12">
               <MessageCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" aria-hidden="true" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? 'No se encontraron conversaciones' : 'No tienes conversaciones aún'}
+                {searchTerm ? 'No se encontraron conversaciones' : 'No tienes conversaciones aun'}
               </h3>
               <p className="text-gray-500 mb-4">
                 {searchTerm 
-                  ? 'Intenta con otro término de búsqueda' 
+                  ? 'Intenta con otro termino de busqueda' 
                   : 'Comienza a hacer match con personas para iniciar conversaciones'
                 }
               </p>

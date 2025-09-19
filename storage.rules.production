@@ -34,7 +34,31 @@ service firebase.storage {
       return request.resource.size < maxSizeMB * 1024 * 1024;
     }
     
-    // User profile images
+    // Función auxiliar para operaciones de perfil con App Check requerido
+    function isAppCheckValidOrProfileOperation() {
+      // Requiere tanto autenticación como App Check válido
+      return request.auth.token.firebase.app_check_token != null && request.auth != null;
+    }
+    
+
+    
+    // User profile images - ruta profile-images/
+    match /profile-images/{userId} {
+      // Public read access for profile images (for discovery)
+      allow read: if true;
+      
+      // Only owner can upload/update their profile images
+      allow write: if isOwner(userId) && 
+                      isValidUser() &&
+                      isValidImageType() && 
+                      isValidFileSize(5) && // 5MB limit
+                      isAppCheckValidOrProfileOperation();
+      
+      // Only owner or admin can delete
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // User profile images (legacy path)
     match /users/{userId}/profile/{imageId} {
       // Public read access for profile images (for discovery)
       allow read: if true;
@@ -42,8 +66,9 @@ service firebase.storage {
       // Only owner can upload/update their profile images
       allow write: if isOwner(userId) && 
                       isValidUser() &&
-                      isValidImageType() &&
-                      isValidFileSize(5); // 5MB limit
+                      isValidImageType() && 
+                      isValidFileSize(5) && // 5MB limit
+                      isAppCheckValidOrProfileOperation();
       
       // Only owner or admin can delete
       allow delete: if isOwner(userId) || isAdmin();
@@ -57,8 +82,9 @@ service firebase.storage {
       // Only owner can upload gallery images
       allow write: if isOwner(userId) && 
                       isValidUser() &&
-                      isValidImageType() &&
-                      isValidFileSize(10); // 10MB limit
+                      isValidImageType() && 
+                      isValidFileSize(10) && // 10MB limit
+                      isAppCheckValidOrProfileOperation();
       
       // Only owner or admin can delete
       allow delete: if isOwner(userId) || isAdmin();
@@ -72,7 +98,7 @@ service firebase.storage {
       // Users can upload media to chats they participate in
       allow write: if isAuthenticated() && 
                       isValidUser() &&
-                      (isValidImageType() || isValidVideoType()) &&
+                      (isValidImageType() || isValidVideoType()) && 
                       isValidFileSize(25); // 25MB limit for chat media
       
       // Only admin can delete chat media (for moderation)
@@ -87,7 +113,7 @@ service firebase.storage {
       // Only owner can upload temp files
       allow write: if isOwner(userId) && 
                       isValidUser() &&
-                      (isValidImageType() || isValidVideoType()) &&
+                      (isValidImageType() || isValidVideoType()) && 
                       isValidFileSize(50); // 50MB limit for temp files
       
       // Auto-delete temp files (handled by Cloud Functions)

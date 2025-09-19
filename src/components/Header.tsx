@@ -1,24 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import { Heart, MessageCircle, Search, Settings, User, LogIn, UserPlus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Heart, MessageCircle, Search, Settings, User, LogIn, UserPlus, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { useAuthContext } from '@/contexts/AuthContext';
 import Logo from '@/components/Logo';
 
 const Header = () => {
   const router = useRouter();
-  const [firebaseUser, loadingAuth] = useAuthState(auth);
+  const { loading: loadingAuth, isAuthenticated } = useAuthContext();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       router.push('/auth');
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error('Error al cerrar sesion:', error);
     }
   };
 
@@ -49,9 +54,24 @@ const Header = () => {
 
           {/* Navigation Icons */}
           <div className="flex items-center space-x-1 md:space-x-3">
-            {!loadingAuth && firebaseUser ? (
+            {!isClient || loadingAuth ? (
+              // Estado de loading durante hidratación o autenticación
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+              </div>
+            ) : isAuthenticated ? (
               // Usuario autenticado - mostrar navegación completa
               <>
+                <button
+                  onClick={() => router.push('/explore')}
+                  className="p-2 text-gray-700 hover:text-accent-600 hover:bg-accent-50 rounded-full transition-colors"
+                  title="Explorar"
+                >
+                  <Users className="w-5 h-5" />
+                </button>
+                
                 <button
                   onClick={() => router.push('/favorites')}
                   className="p-2 text-gray-700 hover:text-accent-600 hover:bg-accent-50 rounded-full transition-colors"
@@ -66,10 +86,6 @@ const Header = () => {
                   title="Mensajes"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  {/* Badge de notificación */}
-                  <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center shadow">
-                    3
-                  </span>
                 </button>
 
                 {/* User Menu */}
@@ -92,7 +108,7 @@ const Header = () => {
                         className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       >
                         <Settings className="w-4 h-4 mr-2" />
-                        Configuración
+                        Configuracion
                       </button>
                       <button
                         onClick={() => {
@@ -109,28 +125,27 @@ const Header = () => {
                         onClick={handleLogout}
                         className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
-                        Cerrar Sesión
+                        Cerrar Sesion
                       </button>
                     </div>
                   )}
                 </div>
               </>
-            ) : !loadingAuth ? (
-              // Usuario no autenticado - mostrar botones de login/registro
+            ) : (
+              // Usuario no autenticado o autenticación cargando - mostrar botones de login/registro
               <>
                 <button
                   onClick={() => router.push('/auth')}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-accent-600 hover:bg-accent-50 rounded-lg transition-colors"
-                  title="Iniciar Sesión"
+                  title="Iniciar Sesion"
                 >
                   <LogIn className="w-4 h-4" />
-                  <span className="hidden sm:inline">Iniciar Sesión</span>
+                  <span className="hidden sm:inline">Iniciar Sesion</span>
                 </button>
                 
                 <button
                   onClick={() => {
                     router.push('/auth');
-                    // Podrías agregar un parámetro para indicar que es registro
                   }}
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-accent-600 hover:bg-accent-700 rounded-lg transition-colors shadow-sm"
                   title="Registrarse"
@@ -139,12 +154,6 @@ const Header = () => {
                   <span className="hidden sm:inline">Registrarse</span>
                 </button>
               </>
-            ) : (
-              // Cargando autenticación
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
-              </div>
             )}
           </div>
         </div>
