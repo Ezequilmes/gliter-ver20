@@ -17,76 +17,76 @@ runtime:
 # Variables de entorno
 env:
   # Firebase Configuration
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID:
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: "soygay-b9bc5"
     availability:
       - BUILD
       - RUNTIME
   
-  NEXT_PUBLIC_FIREBASE_API_KEY:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: "AIzaSyBOQKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
     availability:
       - BUILD
       - RUNTIME
   
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "soygay-b9bc5.firebaseapp.com"
     availability:
       - BUILD
       - RUNTIME
   
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
     value: "soygay-b9bc5.appspot.com"
     availability:
       - BUILD
       - RUNTIME
   
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
     value: "982386751624"
     availability:
       - BUILD
       - RUNTIME
   
-  NEXT_PUBLIC_FIREBASE_APP_ID:
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: "1:982386751624:web:your-app-id"
     availability:
       - BUILD
       - RUNTIME
   
   # Next.js Configuration
-  NEXT_TELEMETRY_DISABLED:
+  - variable: NEXT_TELEMETRY_DISABLED
     value: "1"
     availability:
       - BUILD
       - RUNTIME
   
-  NODE_OPTIONS:
+  - variable: NODE_OPTIONS
     value: "--max-old-space-size=4096"
     availability:
       - BUILD
       - RUNTIME
   
   # App Configuration
-  NODE_ENV:
+  - variable: NODE_ENV
     value: "production"
     availability:
       - BUILD
       - RUNTIME
   
-  PORT:
+  - variable: PORT
     value: "8080"
     availability:
       - RUNTIME
   
   # Deshabilitar App Check temporalmente para resolver error 401
-  NEXT_PUBLIC_DISABLE_APP_CHECK:
+  - variable: NEXT_PUBLIC_DISABLE_APP_CHECK
     value: "true"
     availability:
       - BUILD
       - RUNTIME
   
   # Vertex AI API Key
-  VERTEX_AI_API_KEY:
+  - variable: VERTEX_AI_API_KEY
     value: "AQ.Ab8RN6IZcr5ZnTmCUo3EgZHB39T8UJ0Kx2y1mUWN5x1X9R0AoQ"
     availability:
       - BUILD
