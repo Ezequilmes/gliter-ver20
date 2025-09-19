@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, limit, type Timestamp } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { db } from '@/lib/firebase';
+import { useAuthContext } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { User } from '@/types';
 import UserGrid from '@/components/UserGrid';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Tipo para documentos de la colección publicProfiles
 type PublicProfileDoc = {
@@ -48,12 +49,12 @@ function toBase64Utf8(input: string): string {
 export default function Home() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [firebaseUser, loadingAuth] = useAuthState(auth);
+  const { loading: loadingAuth, isAuthenticated } = useAuthContext();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        if (!firebaseUser) {
+        if (!isAuthenticated) {
           // No autenticado: respetar reglas (no leer) y mostrar CTA
           setUsers([]);
           return;
@@ -69,12 +70,7 @@ export default function Home() {
           const genero = data.gender ?? data.genero ?? 'no especificado';
           const ubicacion = data.location ?? data.ubicacion ?? { lat: 0, lng: 0 };
           const rolSexual = (data.rolSexual ?? null) as User['rolSexual'];
-          const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'>
-                <rect width='400' height='300' fill='#e5e7eb'/>
-                <text x='200' y='160' text-anchor='middle' fill='#6b7280' font-size='48' font-family='Arial, sans-serif'>${
-                  (nombre as string).charAt(0).toUpperCase() || 'U'
-                }</text>
-              </svg>`;
+          const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'><rect width='400' height='300' fill='#e5e7eb'/><text x='200' y='160' text-anchor='middle' fill='#6b7280' font-size='48' font-family='Arial, sans-serif'>${(nombre as string).charAt(0).toUpperCase() || 'U'}</text></svg>`;
           const fotoPerfil =
             data.photoURL ??
             data.fotoPerfil ??
@@ -126,7 +122,7 @@ export default function Home() {
       setLoading(true);
       fetchUsers();
     }
-  }, [firebaseUser, loadingAuth]);
+  }, [isAuthenticated, loadingAuth]);
 
   const loadMoreUsers = async () => {
     // Lógica para cargar más usuarios (no implementada aún)
@@ -138,23 +134,23 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gray-100">
         <main className="container mx-auto p-4">
-          <div className="text-center py-12 text-gray-500">Cargando sesión…</div>
+          <div className="text-center py-12 text-gray-500">Cargando sesion...</div>
         </main>
       </div>
     );
   }
 
-  if (!firebaseUser) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50">
         <main className="container mx-auto p-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Explorar Usuarios</h1>
-          <p className="text-gray-600 mb-6">Debes iniciar sesión para ver perfiles públicos.</p>
+          <p className="text-gray-600 mb-6">Debes iniciar sesion para ver perfiles publicos.</p>
           <Link
             href="/auth"
             className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
-            Ir a Iniciar Sesión
+            Ir a Iniciar Sesion
           </Link>
         </main>
       </div>
@@ -162,26 +158,28 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Explorar Usuarios</h1>
-        {loading ? (
-          <div className="text-center py-12 text-gray-500">Cargando...</div>
-        ) : users.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-500 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-100">
+        <main className="container mx-auto p-4">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Explorar Usuarios</h1>
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">Cargando...</div>
+          ) : users.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-500 mb-4">
+                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay usuarios cerca</h3>
+              <p className="text-gray-500">Intenta ampliar tu area de busqueda o vuelve mas tarde</p>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay usuarios cerca</h3>
-            <p className="text-gray-500">Intenta ampliar tu área de búsqueda o vuelve más tarde</p>
-          </div>
-        ) : (
-          <UserGrid initialUsers={users} loadMoreUsers={loadMoreUsers} hasMore={false} />
-        )}
-      </main>
-    </div>
+          ) : (
+            <UserGrid initialUsers={users} loadMoreUsers={loadMoreUsers} hasMore={false} />
+          )}
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }
