@@ -84,19 +84,27 @@ export default function ProfilePage() {
     setLoading(true);
     
     // Datos actualizados del usuario
-    const updatedUserData = {
+    const updatedUserData: any = {
       nombre: formData.displayName,
       displayName: formData.displayName,
       bio: formData.bio,
       edad: formData.age,
       genero: formData.gender,
-      ubicacion: formData.location ? {
-        lat: formData.location.latitude,
-        lng: formData.location.longitude,
-        city: formData.location.city
-      } : null,
       updatedAt: new Date()
     };
+    
+    // Solo agregar ubicación si existe y tiene datos válidos
+    if (formData.location) {
+      updatedUserData.ubicacion = {
+        lat: formData.location.latitude,
+        lng: formData.location.longitude
+      };
+      
+      // Solo agregar city si no es undefined
+      if (formData.location.city !== undefined && formData.location.city !== null) {
+        updatedUserData.ubicacion.city = formData.location.city;
+      }
+    }
     
     // Para publicProfiles
     const publicProfileData = {
